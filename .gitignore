@@ -700,3 +700,6 @@ xcuserdata/
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,cmake,c++,vcpkg,vs,xcode,git,python,batch,powershell
+
+# Created by pedroo-seaiaa
+!configure.bat
