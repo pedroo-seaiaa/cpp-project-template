@@ -1,28 +1,74 @@
 @echo off
 
-:: Testing if python is installed (or in the PATH)
+call:main
+
+echo.&pause&goto:eof
+
+:: ###########################################################################
+:: Main Entry Point
+:: ###########################################################################
+
+:main
+call:log " === Windows Configuration Batch File (version 0.1.0) ==="
+call:setup-git-hooks
+call:run-python-setup
+goto:eof
+
+
+:: ###########################################################################
+:: "Functions"
+:: ###########################################################################
+
+:setup-git-hooks
+call:log "Configuring Git Hooks..."
+IF EXIST ./tools/scripts/git/hooks (
+    call:log "Installing hooks..."
+    :: git config core.hooksPath ./tools/scripts/git/hooks
+    call:log "Installing hooks -- SUCCESS"
+    call:log "Configuring Git Hooks -- SUCCESS"
+) else (
+    call:log "Installing hooks -- FAILED"
+    call:log "Configuring Git Hooks -- FAILED"
+)
+goto:eof
+
+:run-python-setup
+call:log "Testing if python is installed or in PATH..."
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [configure.bat] Python is not installed or not in your PATH.
+    call:log "Testing if python is installed or in PATH -- FAILED"
 ) else (
-    echo [configure.bat] Python is installed.
-
-    :: Testing the python version
+    call:log "Testing if python is installed or in PATH -- SUCCESS"
+    call:log "Checking python for version 3.12.0 ..."
     python --version > temp.txt 2>&1
     findstr /C:"3.12.0" temp.txt >nul 2>nul
     if %errorlevel% neq 0 (
-        echo [configure.bat] Python 3.12.0 is not installed.
-        echo [configure.bat] This project was tested with Python 3.12.0. Other versions may not work as expected.
+        call:log "Checking python for version 3.12.0 -- FAILED"
+        call:log "This project was tested with Python 3.12.0. Other versions may not work as expected."
     ) else (
-        echo [configure.bat] Python 3.12.0 is installed.
-
-        :: Testing for the exist
-        IF EXIST ./tools/scripts/setup.py (
-            echo [configure.bat] Running setup.py
-        ) else (
-            echo [configure.bat] setup.py not found! Aborting!
-        )
+        call:log "Checking python for version 3.12.0 -- SUCCESS"
     )
+    
     del temp.txt
+
+    call:log "Detecting setup.py ..."
+    IF EXIST ./tools/scripts/setup.py (
+        call:log "Detecting setup.py -- SUCCESS"
+        call:log "Running setup.py"
+    ) else (
+        call:log "Detecting setup.py -- FAILED"
+        call:log "Aborting..."
+        exit
+    )
 )
-pause
+goto:eof
+
+:: ===========================================================================
+:: Utility Functions
+:: ===========================================================================
+
+:log
+:: if verbose is passed
+::echo [configure.bat]%~1
+echo %~1
+goto:eof
