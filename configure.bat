@@ -20,44 +20,44 @@ goto:eof
 :: ###########################################################################
 
 :setup-git-hooks
-call:log "Configuring Git Hooks..."
+call:log "Configuring Git Hooks ..."
 IF EXIST ./tools/GitTools/Hooks (
-    call:log "Installing hooks..."
+    call:log "Installing hooks ..."
     git config core.hooksPath ./tools/GitTools/Hooks
-    call:log "Installing hooks -- SUCCESS"
-    call:log "Configuring Git Hooks -- SUCCESS"
+    call:log "Installing hooks --- SUCCESS"
+    call:log "Configuring Git Hooks --- SUCCESS"
 ) else (
-    call:log "Installing hooks -- FAILED"
-    call:log "Configuring Git Hooks -- FAILED"
+    call:log "Installing hooks --- FAILED"
+    call:log "Configuring Git Hooks --- FAILED"
 )
 goto:eof
 
 :run-python-setup
-call:log "Testing if python is installed or in PATH..."
+call:log "Testing if python is installed or in PATH ..."
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    call:log "Testing if python is installed or in PATH -- FAILED"
+    call:log "Testing if python is installed or in PATH --- FAILED"
 ) else (
-    call:log "Testing if python is installed or in PATH -- SUCCESS"
+    call:log "Testing if python is installed or in PATH --- SUCCESS"
     call:log "Checking python for version 3.12.0 ..."
     python --version > temp.txt 2>&1
     findstr /C:"3.12.0" temp.txt >nul 2>nul
     if %errorlevel% neq 0 (
-        call:log "Checking python for version 3.12.0 -- FAILED"
+        call:log "Checking python for version 3.12.0 --- FAILED"
         call:log "This project was tested with Python 3.12.0. Other versions may not work as expected."
     ) else (
-        call:log "Checking python for version 3.12.0 -- SUCCESS"
+        call:log "Checking python for version 3.12.0 --- SUCCESS"
     )
     
     del temp.txt
 
     call:log "Detecting setup.py ..."
     IF EXIST ./tools/scripts/setup.py (
-        call:log "Detecting setup.py -- SUCCESS"
+        call:log "Detecting setup.py --- SUCCESS"
         call:log "Running setup.py"
     ) else (
-        call:log "Detecting setup.py -- FAILED"
-        call:log "Aborting..."
+        call:log "Detecting setup.py --- FAILED"
+        call:log "Aborting ..."
     )
 )
 goto:eof
