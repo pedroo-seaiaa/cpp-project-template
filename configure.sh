@@ -112,7 +112,7 @@ setup_git_hooks() {
     log_warn "Configuring Git Hooks ..."
     if [ -d "./tools/GitTools/Hooks" ]; then
         log_warn "Installing hooks ..."
-        # git config core.hooksPath ./tools/GitTools/Hooks
+        git config core.hooksPath ./tools/GitTools/Hooks
         log_info "Installing hooks --- SUCCESS"
         log_info "Configuring Git Hooks --- SUCCESS"
     else
