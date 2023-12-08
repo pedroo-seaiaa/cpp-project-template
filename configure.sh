@@ -1,4 +1,21 @@
-#!/bin/sh
+#!/bin/bash
+
+VERBOSE=0
+while getopts 'v' flag; do
+    case "${flag}" in
+    v)
+        VERBOSE=1
+        ;;
+    ?)
+        echo "script usage: $(basename \$0) [-v]" >&2
+        exit 1
+        ;;
+    esac
+done
+
+# ############################################################################
+# TODO(PO): import logger.sh
+# ############################################################################
 
 # =============================================================================
 # Color Definitions
@@ -59,56 +76,83 @@ export CMAKE_LOG_LEVEL_WARN=5
 export CMAKE_LOG_LEVEL_ERROR=6
 
 CMAKE_CURRENT_LOG_LEVEL=$CMAKE_LOG_LEVEL_INFO
+if [[ $VERBOSE = 1 ]]; then
+    CMAKE_CURRENT_LOG_LEVEL=$CMAKE_LOG_LEVEL_TRACE
+fi
 
 # =============================================================================
 # Functions Definitions
 # =============================================================================
 
-log_message() {
-    echo "$1"
+function log_message() {
+    echo -e "$1"
 }
 
-log_trace() {
+function log_trace() {
     if [[ $CMAKE_CURRENT_LOG_LEVEL -le $CMAKE_LOG_LEVEL_TRACE ]]; then
-        THIS_SCRIPT=${0##*/}
-        log_message "$BWhite[$THIS_SCRIPT][T] $1 $Color_Off"
+        if [[ $VERBOSE = 1 ]]; then
+            THIS_SCRIPT="[${0##*/}]"
+        else
+            THIS_SCRIPT=""
+        fi
+        log_message "$BWhite${THIS_SCRIPT}[T] $1 $Color_Off"
     fi
 }
 
-log_debug() {
+function log_debug() {
     if [[ $CMAKE_CURRENT_LOG_LEVEL -le $CMAKE_LOG_LEVEL_DEBUG ]]; then
-        THIS_SCRIPT=${0##*/}
-        log_message "$Cyan[$THIS_SCRIPT][D] $1 $Color_Off"
+        if [[ $VERBOSE = 1 ]]; then
+            THIS_SCRIPT="[${0##*/}]"
+        else
+            THIS_SCRIPT=""
+        fi
+        log_message "$Cyan${THIS_SCRIPT}[D] $1 $Color_Off"
     fi
 }
 
-log_info() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$Green[$THIS_SCRIPT][I] $1 $Color_Off"
+function log_info() {
+    if [[ $VERBOSE = 1 ]]; then
+        THIS_SCRIPT="[${0##*/}]"
+    else
+        THIS_SCRIPT=""
+    fi
+    log_message "$Green${THIS_SCRIPT}[I] $1 $Color_Off"
 }
 
-log_warn() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$Yellow[$THIS_SCRIPT][W] $1 $Color_Off"
+function log_warn() {
+    if [[ $VERBOSE = 1 ]]; then
+        THIS_SCRIPT="[${0##*/}]"
+    else
+        THIS_SCRIPT=""
+    fi
+    log_message "$Yellow${THIS_SCRIPT}[W] $1 $Color_Off"
 }
 
-log_error() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$Red[$THIS_SCRIPT][E] $1 $Color_Off"
+function log_error() {
+    if [[ $VERBOSE = 1 ]]; then
+        THIS_SCRIPT="[${0##*/}]"
+    else
+        THIS_SCRIPT=""
+    fi
+    log_message "$Red${THIS_SCRIPT}[E] $1 $Color_Off"
 }
 
-log_fatal() {
-    THIS_SCRIPT=${0##*/}
-    log_message "$On_Red[$THIS_SCRIPT][F] $1$Color_Off"
+function log_fatal() {
+    if [[ $VERBOSE = 1 ]]; then
+        THIS_SCRIPT="[${0##*/}]"
+    else
+        THIS_SCRIPT=""
+    fi
+    log_message "$On_Red${THIS_SCRIPT}[F] $1$Color_Off"
     exit 1
 }
-
 
 # ############################################################################
 # Functions
 # ############################################################################
 
-setup_git_hooks() {
+function setup_git_hooks() {
+    log_trace "setup_git_hooks"
     log_warn "Configuring Git Hooks ..."
     if [ -d "./tools/GitTools/Hooks" ]; then
         log_warn "Installing hooks ..."
@@ -121,12 +165,12 @@ setup_git_hooks() {
     fi
 }
 
-run_python_setup() {
+function run_python_setup() {
     log_warn "Testing if python is installed or in PATH ..."
-    if command -v python3 >/dev/null 2>&1; then
+    if command -v python >/dev/null 2>&1; then
         log_info "Testing if python is installed or in PATH --- SUCCESS"
         log_warn "Checking python for version 3.12.0 ..."
-        if python3 --version | grep -q "Python 3.12.0"; then
+        if python --version | grep -q "Python 3.12.0"; then
             log_info "Checking python for version 3.12.0 --- SUCCESS"
         else
             log_error "Checking python for version 3.12.0 --- FAILED"
@@ -141,6 +185,8 @@ run_python_setup() {
     if [ -e "./tools/scripts/setup.py" ]; then
         log_warn "Detecting setup.py --- SUCCESS"
         log_warn "Running setup.py"
+        python --version
+        python ./tools/scripts/setup.py
     else
         log_fatal "Detecting setup.py --- FAILED"
     fi
