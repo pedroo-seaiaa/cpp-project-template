@@ -21,9 +21,9 @@ goto:eof
 
 :setup-git-hooks
 call:log "Configuring Git Hooks..."
-IF EXIST ./tools/scripts/git/hooks (
+IF EXIST ./tools/GitTools/Hooks (
     call:log "Installing hooks..."
-    git config core.hooksPath ./tools/scripts/git/hooks
+    git config core.hooksPath ./tools/GitTools/Hooks
     call:log "Installing hooks -- SUCCESS"
     call:log "Configuring Git Hooks -- SUCCESS"
 ) else (
