@@ -23,7 +23,7 @@ goto:eof
 call:log "Configuring Git Hooks..."
 IF EXIST ./tools/scripts/git/hooks (
     call:log "Installing hooks..."
-    :: git config core.hooksPath ./tools/scripts/git/hooks
+    git config core.hooksPath ./tools/scripts/git/hooks
     call:log "Installing hooks -- SUCCESS"
     call:log "Configuring Git Hooks -- SUCCESS"
 ) else (
@@ -58,7 +58,6 @@ if %errorlevel% neq 0 (
     ) else (
         call:log "Detecting setup.py -- FAILED"
         call:log "Aborting..."
-        exit
     )
 )
 goto:eof
