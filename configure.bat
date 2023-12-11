@@ -1,5 +1,9 @@
 @echo off
 
+set ROOT_DIR=%~dp0
+set GIT_HOOKS_PATH=%ROOT_DIR%tools\GitTools\Hooks
+set PYTHON_SETUP_SCRIPT_PATH=%ROOT_DIR%tools\BuildTools\setup.py
+
 call:main
 
 echo.&pause&goto:eof
@@ -21,9 +25,9 @@ goto:eof
 
 :setup-git-hooks
 call:log "Configuring Git Hooks ..."
-IF EXIST ./tools/GitTools/Hooks (
+IF EXIST %GIT_HOOKS_PATH% (
     call:log "Installing hooks ..."
-    git config core.hooksPath ./tools/GitTools/Hooks
+    git config core.hooksPath %GIT_HOOKS_PATH%
     call:log "Installing hooks --- SUCCESS"
     call:log "Configuring Git Hooks --- SUCCESS"
 ) else (
@@ -52,9 +56,10 @@ if %errorlevel% neq 0 (
     del temp.txt
 
     call:log "Detecting setup.py ..."
-    IF EXIST ./tools/scripts/setup.py (
+    IF EXIST %PYTHON_SETUP_SCRIPT_PATH% (
         call:log "Detecting setup.py --- SUCCESS"
         call:log "Running setup.py"
+        python %PYTHON_SETUP_SCRIPT_PATH%
     ) else (
         call:log "Detecting setup.py --- FAILED"
         call:log "Aborting ..."
