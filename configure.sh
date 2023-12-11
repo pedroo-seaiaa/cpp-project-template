@@ -1,5 +1,9 @@
 #!/bin/bash
 
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+GIT_HOOKS_PATH=$ROOT_DIR/tools/GitTools/Hooks
+PYTHON_SETUP_SCRIPT_PATH=$ROOT_DIR/tools/BuildTools/setup.py
+
 VERBOSE=0
 while getopts 'v' flag; do
     case "${flag}" in
@@ -151,12 +155,14 @@ function log_fatal() {
 # Functions
 # ############################################################################
 
+
+
 function setup_git_hooks() {
     log_trace "setup_git_hooks"
     log_warn "Configuring Git Hooks ..."
-    if [ -d "./tools/GitTools/Hooks" ]; then
+    if [ -d "$GIT_HOOKS_PATH" ]; then
         log_warn "Installing hooks ..."
-        git config core.hooksPath ./tools/GitTools/Hooks
+        git config core.hooksPath "$GIT_HOOKS_PATH"
         log_info "Installing hooks --- SUCCESS"
         log_info "Configuring Git Hooks --- SUCCESS"
     else
@@ -182,11 +188,10 @@ function run_python_setup() {
     fi
 
     log_warn "Detecting setup.py ..."
-    if [ -e "./tools/scripts/setup.py" ]; then
+    if [ -e "$PYTHON_SETUP_SCRIPT_PATH" ]; then
         log_warn "Detecting setup.py --- SUCCESS"
         log_warn "Running setup.py"
-        python --version
-        python ./tools/scripts/setup.py
+        python $PYTHON_SETUP_SCRIPT_PATH
     else
         log_fatal "Detecting setup.py --- FAILED"
     fi

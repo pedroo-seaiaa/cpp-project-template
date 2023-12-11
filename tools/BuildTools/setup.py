@@ -1,9 +1,3 @@
-# TODO(PO): Add copyright note
-
-import subprocess
-import re
-import sys
-
 from dependencies import check_system_requirements
 
 print("Checking the system requirements ...")

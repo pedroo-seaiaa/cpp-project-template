@@ -1,5 +1,6 @@
 from utils import check_software_version
 
+
 SHOULD_ABORT = False
 
 
@@ -53,6 +54,8 @@ def check_system_requirements():
             system_requirement.onSuccess()
         else:
             system_requirement.onMissing()
+
         if SHOULD_ABORT:
             return False
+
     return True
