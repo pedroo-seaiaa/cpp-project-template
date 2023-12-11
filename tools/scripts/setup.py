@@ -4,31 +4,8 @@ import subprocess
 import re
 import sys
 
-try:
-    from packaging import version
-    print("packaging module is installed.")
-except ModuleNotFoundError:
-    print("packaging module is not installed.")
-
-    user_response = input("Do you want to install it? (yes/no): ").lower()
-
-    if user_response == "yes":
-        try:
-            # Attempt to install the module
-            import subprocess
-            subprocess.run(["pip", "install", "packaging"], check=True)
-            print("packaging module has been successfully installed.")
-            # Now try importing it again
-            from packaging import version
-            print("Now the packaging module is available.")
-        except subprocess.CalledProcessError:
-            print("Failed to install the packaging module.")
-    else:
-        print("Installation aborted. The script cannot proceed without the packaging module.")
-        import sys
-        sys.exit(1)  # Exit with a non-zero code to indicate an error
-
-
+from utils import import_package
+import_package('packaging')
 
 # Define a list of software build_dependencies
 build_dependencies = [
