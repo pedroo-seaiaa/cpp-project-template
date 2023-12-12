@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.27)
+project(CppProjectTemplate)
+add_executable(app)
+file(GLOB_RECURSE app_SOURCES "src/CPT/*.cpp")
+target_sources(app PRIVATE ${app_SOURCES})
