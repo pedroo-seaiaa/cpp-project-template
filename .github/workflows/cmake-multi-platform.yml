@@ -12,261 +12,73 @@ on:
       - main
       - dev
 
+env:
+  CLANG_TIDY_VERSION: "15.0.2"
+
 jobs:
-  windows-msvc-debug:
-    runs-on: [windows-latest]
-
+  Test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+        compiler:
+          - llvm
+          - gcc
+        include:
+          - os: "windows-latest"
+            compiler: "msvc"
     steps:
-      - uses: actions/checkout@v4
+      - name: Check for LLVM version mismatches
+        if: ${{ contains(matrix.compiler, 'llvm') && !contains(matrix.compiler, env.CLANG_TIDY_VERSION) }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('There is a mismatch between configured llvm compiler and clang-tidy version chosen')
+
+      - uses: actions/checout@v4
         with:
           submodules: recursive
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/vcpkg
+            ./build/vcpkg_installed
+            ${{ env.HOME }}/.cache/vcpkg/archives
+            ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
+            ${{ env.LOCALAPPDATA }}\vcpkg\archives
+            ${{ env.APPDATA }}\vcpkg\archives
+          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.BUILD_TYPE }}-
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          compiler: "msvc"
-          vcvarshall: true
+          compiler: ${{ matrix.compiler }}
+          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+          
           cmake: true
           ninja: true
           vcpkg: true
+          clangtidy: ${{ env.CLANG_TIDY_VERSION }}
 
-      - name: Configure
-        run: cmake --preset windows-msvc-debug
+          cppcheck: true
 
-      - name: Build
-        run: cmake --build out/build/windows-msvc-debug --target RUN_ALL_TARGETS
-
-  windows-msvc-dev:
-    runs-on: [windows-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: "msvc"
-          vcvarshall: true
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset windows-msvc-dev
+      - name: Configure CMake
+        run: |
+          cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}}
 
       - name: Build
-        run: cmake --build out/build/windows-msvc-dev --target RUN_ALL_TARGETS
+        run: |
+          cmake --build ./build --config ${{matrix.build_type}}
 
-  windows-msvc-release:
-    runs-on: [windows-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: "msvc"
-          vcvarshall: true
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset windows-msvc-release
-
-      - name: Build
-        run: cmake --build out/build/windows-msvc-release --target RUN_ALL_TARGETS
-
-  windows-clang-debug:
-    runs-on: [windows-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset windows-clang-debug
-
-      - name: Build
-        run: cmake --build out/build/windows-clang-debug --target RUN_ALL_TARGETS
-
-  windows-clang-dev:
-    runs-on: [windows-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset windows-clang-dev
-
-      - name: Build
-        run: cmake --build out/build/windows-clang-dev --target RUN_ALL_TARGETS
-
-  windows-clang-release:
-    runs-on: [windows-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset windows-clang-release
-
-      - name: Build
-        run: cmake --build out/build/windows-clang-release --target RUN_ALL_TARGETS
-
-  linux-clang-debug:
-    runs-on: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset linux-clang-debug
-
-      - name: Build
-        run: cmake --build out/build/linux-clang-debug --target RUN_ALL_TARGETS
-
-  linux-clang-dev:
-    runs-on: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset linux-clang-dev
-
-      - name: Build
-        run: cmake --build out/build/linux-clang-dev --target RUN_ALL_TARGETS
-
-  linux-clang-release:
-    runs-on: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset linux-clang-release
-
-      - name: Build
-        run: cmake --build out/build/linux-clang-release --target RUN_ALL_TARGETS
-
-  linux-gcc-debug:
-    runs-on: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset linux-gcc-debug
-
-      - name: Build
-        run: cmake --build out/build/linux-gcc-debug --target RUN_ALL_TARGETS
-
-  linux-gcc-dev:
-    runs-on: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset linux-gcc-dev
-
-      - name: Build
-        run: cmake --build out/build/linux-gcc-dev --target RUN_ALL_TARGETS
-
-  linux-gcc-release:
-    runs-on: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          cmake: true
-          ninja: true
-          vcpkg: true
-
-      - name: Configure
-        run: cmake --preset linux-gcc-release
-
-      - name: Build
-        run: cmake --build out/build/linux-gcc-release --target RUN_ALL_TARGETS
+      - name: Test
+        working-directory: ./build
+        run: |
+          ctest -C ${{matrix.build_type}}
