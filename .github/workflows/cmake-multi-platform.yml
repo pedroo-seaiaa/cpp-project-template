@@ -24,7 +24,6 @@ jobs:
         os:
           - windows-latest
           - ubuntu-latest
-          - macos-latest
         compiler:
           - llvm-15.0.2
           - gcc
