@@ -2,7 +2,10 @@
     "name": "aiaa-solutions",
     "version-string": "0.1.0",
     "dependencies": [
-      "spdlog"
+      "spdlog",
+      "catch",
+      "gtest",
+      "benchmark"
     ]
   }
   
