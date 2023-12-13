@@ -28,6 +28,12 @@ jobs:
         compiler:
           - llvm-15.0.2
           - gcc
+        generator:
+          - "Ninja Multi-Config"
+        build_type:
+          - Release
+          - RelWithDebInfo
+          - Debug
         include:
           - os: "windows-latest"
             compiler: "msvc"
