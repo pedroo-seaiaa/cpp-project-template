@@ -1,0 +1,30 @@
+include_guard(GLOBAL)
+
+function(include_gtest)
+  log_info("Configuring Google Test")
+  find_package(Threads REQUIRED)
+  find_package(GTest)
+  if(NOT GTest_FOUND)
+    if(NOT EXISTS ${CMAKE_BINARY_DIR}/_deps/googletest-src)
+      log_warn("Configuring Google Test -- NOT FOUND")
+      log_info("Downloading into ${CMAKE_BINARY_DIR}/_deps")
+      FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850 # release-1.12.1
+      )
+      FetchContent_MakeAvailable(googletest)
+    else()
+      log_warn("Configuring Google Test -- FOUND in ${CMAKE_BINARY_DIR}/_deps")
+      add_subdirectory(${CMAKE_BINARY_DIR}/_deps/googletest-src)
+    endif()
+    log_info("You might want to try installing on your system")
+    add_library(KKSK::GTest ALIAS gtest)
+    add_library(KKSK::GMock ALIAS gmock)
+  else()
+    add_library(KKSK::GTest ALIAS GTest::gtest)
+    add_library(KKSK::GMock ALIAS GTest::gmock)
+  endif(NOT GTest_FOUND)
+  include(GoogleTest)
+  log_info("Configuring Google Test -- done")
+endfunction()

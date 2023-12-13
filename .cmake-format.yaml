@@ -54,7 +54,7 @@ format:
   _help_max_pargs_hwrap:
   - If a positional argument group contains more than this many
   - arguments, then force it to a vertical layout.
-  max_pargs_hwrap: 6
+  max_pargs_hwrap: 3
   _help_max_rows_cmdline:
   - If a cmdline positional group consumes more than this many
   - lines without nesting, then invalidate the layout (and nest)
@@ -141,7 +141,7 @@ markup:
   - If comment markup is enabled, don't reflow any comment block
   - which matches this (regex) pattern. Default is `None`
   - (disabled).
-  literal_comment_pattern: None
+  literal_comment_pattern: .* # disabling all comments
   _help_fence_pattern:
   - Regular expression to match preformat fences in comments
   - default= ``r'^\s*([`~]{3}[`~]*)(.*)$'``
