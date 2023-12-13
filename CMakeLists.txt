@@ -105,7 +105,7 @@ target_sources(myprojectlib PRIVATE ${myprojectlib_SOURCE_FILES} ${myprojectlib_
 
 target_include_directories(
   myprojectlib
-  PRIVATE ${ROOT_DIR}/lib
+  PRIVATE ${ROOT_DIR}/src/ProjectLib
   PUBLIC ${ROOT_DIR}/include
 )
 
@@ -125,6 +125,8 @@ file(GLOB_RECURSE myprojectapp_SOURCE_FILES "src/ProjectApp/*.cpp")
 file(GLOB_RECURSE myprojectapp_HEADER_FILES "src/ProjectApp/*.hpp")
 
 target_sources(myprojectapp PRIVATE ${myprojectapp_SOURCE_FILES} ${myprojectapp_HEADER_FILES})
+
+target_include_directories(myprojectapp PRIVATE ${ROOT_DIR}/src/ProjectApp)
 
 target_link_libraries(myprojectapp PRIVATE myprojectlib)
 
@@ -162,6 +164,8 @@ if(MYPROJECT_BUILD_MAIN_TESTS)
 
   target_sources(myproject_main_tests PRIVATE ${myproject_main_tests_SOURCE_FILES})
 
+  target_include_directories(myproject_main_tests PRIVATE ${ROOT_DIR}/tests/MainTests)
+
   target_link_libraries(myproject_main_tests PRIVATE myprojectlib Catch2::Catch2WithMain)
 
   set_target_precompiled_headers(myproject_main_tests PRIVATE)
@@ -196,6 +200,8 @@ if(MYPROJECT_BUILD_UNIT_TESTS)
 
   target_sources(myproject_unit_tests PRIVATE ${myproject_unit_tests_SOURCE_FILES})
 
+  target_include_directories(myproject_unit_tests PRIVATE ${ROOT_DIR}/tests/UnitTests)
+
   target_link_libraries(myproject_unit_tests PRIVATE myprojectlib GTest::gtest GTest::gmock)
 
   set_target_precompiled_headers(myproject_unit_tests PRIVATE)
@@ -225,6 +231,9 @@ if(MYPROJECT_BUILD_PERF_TESTS AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
 
   file(GLOB_RECURSE myproject_perf_tests_SOURCE_FILES "tests/PerfTests/*.cpp")
   target_sources(myproject_perf_tests PRIVATE ${myproject_perf_tests_SOURCE_FILES})
+
+  target_include_directories(myproject_perf_tests PRIVATE ${ROOT_DIR}/tests/PerfTests)
+
   target_link_libraries(myproject_perf_tests PRIVATE myprojectlib benchmark::benchmark)
 
   set_target_precompiled_headers(myproject_perf_tests PRIVATE)
@@ -266,6 +275,9 @@ if(MYPROJECT_BUILD_FUZZ_TESTS)
 
     file(GLOB_RECURSE myproject_fuzz_tests_SOURCE_FILES "tests/FuzzTests/*.cpp")
     target_sources(myproject_fuzz_tests PRIVATE ${myproject_fuzz_tests_SOURCE_FILES})
+
+    target_include_directories(myproject_fuzz_tests PRIVATE ${ROOT_DIR}/tests/FuzzTests)
+
     target_link_libraries(
       myproject_fuzz_tests
       PRIVATE myproject_global_settings
@@ -314,6 +326,9 @@ if(MYPROJECT_BUILD_GCOV_TESTS
             ${myproject_PUBLIC_HEADER_FILES}
             ${myproject_covr_tests_SOURCE_FILES}
   )
+
+  target_include_directories(myproject_covr_tests PRIVATE ${ROOT_DIR}/tests/UnitTests)
+
   target_link_libraries(
     myproject_covr_tests
     PRIVATE myprojectlib
