@@ -1,3 +1,5 @@
+import platform
+
 from utils import check_software_version
 
 
@@ -37,14 +39,13 @@ def install_cmake():
 def install_clang():
     print("Installing clang...")
 
+
 # ############################################################################
 # System Requirements
 # ############################################################################
-
-
 system_requirements = [
     SystemRequirement("cmake", "3.21.0", install_cmake),
-    SystemRequirement("clang", "18.0.0"),  # Real version is 17.0.1
+    SystemRequirement("clang", "15.0.0")
 ]
 
 

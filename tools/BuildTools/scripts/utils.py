@@ -1,6 +1,27 @@
 import subprocess
 import re
 import sys
+import platform
+
+def install_pip():
+    try:
+        __import__("pip")
+    except ModuleNotFoundError:
+        try:
+            print("Attempting to install pip...")
+            if platform.system().lower() == "linux":
+                # Install pip using apt-get on Ubuntu
+                subprocess.run(["sudo", "apt-get", "update"], check=True)
+                subprocess.run(["sudo", "apt-get", "install", "python3-pip", "-y"], check=True)
+            else:
+                subprocess.run([sys.executable, "-m", "ensurepip", "--default-pip"], check=True)
+            print("pip has been successfully installed.")
+        except subprocess.CalledProcessError:
+            print("Failed to install pip. Please install it manually.")
+            sys.exit(1)
+
+# Check and install pip
+install_pip()
 
 def import_package(package_name: str) -> None:
     try:
@@ -44,4 +65,5 @@ def check_software_version(software: str, required_version:str):
             print(f"Failed to extract {software} version.")
             return False
     except subprocess.CalledProcessError:
+        print(f"Failed to check {software} version")
         return False

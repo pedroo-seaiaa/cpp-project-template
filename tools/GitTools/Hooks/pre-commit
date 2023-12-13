@@ -1,6 +1,41 @@
-#!/bin/sh
+#!/bin/bash
 
-echo "=== Running pre-commit git-hooks ==="
+# =============================================================================
+# Fun Fact: we can use the following shebang line for cross-compiling:
+# /* #!/bin/bash; C:/Program\ Files/path/to/Git/usr/bin/sh.exe */
+# according to https://www.youtube.com/watch?v=fMYv6-SZsSo
+# =============================================================================
+
+# ============================================================================
+# Script setup
+# ============================================================================
+
+# get the directory where the script is located
+THIS_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+# import git utilities
+GIT_UTILITIES_SCRIPT_PATH=$THIS_SCRIPT_DIR/../Utils/utilities.sh
+test -f $GIT_UTILITIES_SCRIPT_PATH || (echo "File not found: $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
+source $GIT_UTILITIES_SCRIPT_PATH || (echo "Failed to source $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
+
+# detect if this tools folder is a submodule or not
+IS_SUBMODULE=$(
+    git_is_submodule
+    echo $?
+)
+
+# getting the root level directory of the project
+PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
+if [[ $IS_SUBMODULE == 1 ]]; then
+    cd "${PROJECT_ROOT_DIR}/.."
+    PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
+fi
+
+# import logger
+source ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/logger.sh
+
+CMAKE_CURRENT_LOG_LEVEL=$CMAKE_LOG_LEVEL_TRACE
+
+log_info "=== Running pre-commit git-hooks ==="
 
 # # An example hook script to verify what is about to be committed.
 # # Called by "git commit" with no arguments.  The hook should
@@ -9,49 +44,24 @@ echo "=== Running pre-commit git-hooks ==="
 # #
 # # To enable this hook, rename this file to "pre-commit".
 
-echo "TODO(PO): Validate email address"
-echo "TODO(PO): Get a list of all changed files."
-echo "TODO(PO): Format all Added or Modified files (c++, cmake)"
-echo "TODO(PO): Set REQUIRES_CLEAN_BUILD if Added or Deleted files"
-echo "TODO(PO): Run Unit Tests"
+log_warn "TODO(PO): Validate email address"
+log_warn "TODO(PO): Get a list of all changed files."
+log_warn "TODO(PO): Format all Added or Modified files (c++, cmake)"
+log_warn "TODO(PO): Set REQUIRES_CLEAN_BUILD if Added or Deleted files"
 
-# # if git rev-parse --verify HEAD >/dev/null 2>&1
-# # then
-# # 	against=HEAD
-# # else
-# # 	# Initial commit: diff against an empty tree object
-# # 	against=$(git hash-object -t tree /dev/null)
-# # fi
+# =============================================================================
+# Run All Tests
+# =============================================================================
 
-# # # If you want to allow non-ASCII filenames set this variable to true.
-# # allownonascii=$(git config --type=bool hooks.allownonascii)
+if [[ $CLEAN_BUILD != 0 ]]; then
+    ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/runTests.sh -f
+else
+    ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/runTests.sh
+fi
 
-# # # Redirect output to stderr.
-# # exec 1>&2
-
-# # # Cross platform projects tend to avoid non-ASCII filenames; prevent
-# # # them from being added to the repository. We exploit the fact that the
-# # # printable range starts at the space character and ends with tilde.
-# # if [ "$allownonascii" != "true" ] &&
-# # 	# Note that the use of brackets around a tr range is ok here, (it's
-# # 	# even required, for portability to Solaris 10's /usr/bin/tr), since
-# # 	# the square bracket bytes happen to fall in the designated range.
-# # 	test $(git diff --cached --name-only --diff-filter=A -z $against |
-# # 	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
-# # then
-# # 	cat <<\EOF
-# # Error: Attempt to add a non-ASCII file name.
-
-# # This can cause problems if you want to work with people on other platforms.
-
-# # To be portable it is advisable to rename the file.
-
-# # If you know what you are doing you can disable this check using:
-
-# #   git config hooks.allownonascii true
-# # EOF
-# # 	exit 1
-# # fi
-
-# # # If there are whitespace errors, print the offending file names and fail.
-# # exec git diff-index --check --cached $against --
+if [[ "$?" != 0 ]]; then
+    log_error "pre-commit tests - FAILED"
+    exit 1
+else
+    log_info "pre-commit tests - DONE"
+fi
