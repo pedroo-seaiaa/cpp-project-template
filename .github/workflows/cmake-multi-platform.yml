@@ -75,6 +75,32 @@ jobs:
 
           cppcheck: true
 
+      - id: getOS
+        if: ${{ contains(matrix.os, 'ubuntu') }}
+        run: |
+          INPUT="${{matrix.os}}"
+          OUTPUT="linux"
+          echo "::set-output name=convertedString::${OUTPUT}
+
+      - id: getOS
+        if: ${{ !contains(matrix.os, 'ubuntu') }}
+        run: |
+          INPUT="${{matrix.os}}"
+          OUTPUT="${INPUT%-*}"
+          echo "::set-output name=convertedString::${OUTPUT}
+
+      - id: getCompiler
+        run: |
+          INPUT="${{matrix.os}}"
+          OUTPUT="${INPUT%-*}"
+          
+          echo "::set-output name=convertedString::${OUTPUT}
+
+      - id: getBuildType
+        run: |
+          INPUT="{{matrix.build_type}}"
+          echo "::set-output name=lowerCaseValue::${INPUT,,}"
+
       - name: Configure CMake
         run: |
           cmake -S . --preset ${{matrix.os}}-${{matrix.compiler}}-${{matrix.build_type}}
