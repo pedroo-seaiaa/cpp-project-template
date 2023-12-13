@@ -39,7 +39,7 @@ jobs:
           script: |
             core.setFailed('There is a mismatch between configured llvm compiler and clang-tidy version chosen')
 
-      - uses: actions/checout@v4
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
