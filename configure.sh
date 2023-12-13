@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOGGER_PATH=$ROOT_DIR/tools/Utilities/logger.sh
+LOGGER_PATH=$ROOT_DIR/tools/GitTools/Utils/logger.sh
 GIT_HOOKS_PATH=$ROOT_DIR/tools/GitTools/Hooks
-PYTHON_SETUP_SCRIPT_PATH=$ROOT_DIR/tools/BuildTools/setup.py
+PYTHON_SETUP_SCRIPT_PATH=$ROOT_DIR/tools/BuildTools/scripts/setup.py
 
 source $LOGGER_PATH
 
@@ -28,15 +28,21 @@ done
 
 function setup_git_hooks() {
     log_trace "setup_git_hooks"
-    log_warn "Configuring Git Hooks ..."
-    if [ -d "$GIT_HOOKS_PATH" ]; then
-        log_warn "Installing hooks ..."
-        git config core.hooksPath "$GIT_HOOKS_PATH"
-        log_info "Installing hooks --- SUCCESS"
-        log_info "Configuring Git Hooks --- SUCCESS"
+
+    read -p "Do you want to configure the git hooks? (yes/no): " UserInput
+    if [ "$UserInput" = "yes" ]; then
+        log_warn "Configuring Git Hooks ..."
+        if [ -d "$GIT_HOOKS_PATH" ]; then
+            log_warn "Installing hooks ..."
+            git config core.hooksPath "$GIT_HOOKS_PATH"
+            log_info "Installing hooks --- SUCCESS"
+            log_info "Configuring Git Hooks --- SUCCESS"
+        else
+            log_warn "Installing hooks --- FAILED"
+            log_warn "Configuring Git Hooks --- FAILED"
+        fi
     else
-        log_warn "Installing hooks --- FAILED"
-        log_warn "Configuring Git Hooks --- FAILED"
+        log_info "Skipping git hooks configuration."
     fi
 }
 
@@ -66,6 +72,23 @@ function run_python_setup() {
     fi
 }
 
+function check_linux_system_requirements() {
+    log_warn "Detecting LCOV ..."
+    if command -v lcov &>/dev/null; then
+        log_info "Detecting LCOV --- SUCCESS"
+    else
+        log_error "Detecting LCOV --- FAILURE"
+        read -p "Do you want to install LCOV? (yes/no): " UserInput
+        if [ "$UserInput" = "yes" ]; then
+            log_warn "Installing LCOV ..."
+            sudo apt-get update
+            sudo apt-get install lcov
+        else
+            log_warn "Skipping LCOV installation. Some CMake Targets may not work without it."
+        fi
+    fi
+}
+
 # ############################################################################
 # Main Entry Point
 # ############################################################################
@@ -73,6 +96,7 @@ function run_python_setup() {
 main() {
     log_message " === Linux Configuration Batch File (version 0.1.0) ==="
     setup_git_hooks
+    check_linux_system_requirements
     run_python_setup
 }
 
