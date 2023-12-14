@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # ============================================================================
 # Set PROJECT_ROOT_DIR
 # ============================================================================
@@ -47,13 +46,18 @@ log_debug "LINUX_DOCKERFILE_PATH $LINUX_DOCKERFILE_PATH"
 
 log_info " === Running Initial Project Setup (through Docker) === "
 
-log_warn "TODO: Detect docker"
+log_warn "Detecting docker installation ..."
+if command -v docker &>/dev/null; then
+    log_warn "Detecting docker installation --- SUCCESS"
+else
+    log_fatal "Detecting docker installation --- FAILURE"
+fi
 
 log_warn "Detecting docker image tagged with aiaa-linux ..."
 IMAGE_ID=$(docker images -q aiaa-linux)
 if [ "$IMAGE_ID" = "" ]; then
     log_error "Detecting docker image tagged with aiaa-linux --- FAILURE"
-    
+
     log_warn "Building aiaa-linux from Dockerfile ..."
     docker build -f ${LINUX_DOCKERFILE_PATH}/linux.Dockerfile ${LINUX_DOCKERFILE_PATH} --tag aiaa-linux
     IMAGE_ID=$(docker images -q aiaa-linux)
@@ -66,10 +70,11 @@ else
     log_info "Detecting docker image tagged with aiaa-linux --- SUCCESS"
 fi
 
-exit 0
-
+VOLUME_NAME="cpp-template-project"
 log_warn "Running project setup through aiaa-linux ..."
-docker run --rm aiaa-linux -v ${PROJECT_ROOT_DIR}:/antiphon # removes container but not the image, which is okay
+cd ${PROJECT_ROOT_DIR}/..
+docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${VOLUME_NAME} aiaa-linux bash
+#docker run --rm aiaa-linux -v ${VOLUME_NAME}:/${VOLUME_NAME}
 
 # # debug
 log_debug ""
