@@ -20,6 +20,9 @@ jobs:
         run: |
           echo "Hello World"
 
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
 # env:
 #   CLANG_TIDY_VERSION: "15.0.2"
@@ -75,7 +78,7 @@ jobs:
 #         with:
 #           compiler: ${{ matrix.compiler }}
 #           vcvarsall: ${{ contains(matrix.os, 'windows') }}
-          
+
 #           cmake: true
 #           ninja: true
 #           vcpkg: true
@@ -101,7 +104,7 @@ jobs:
 #         run: |
 #           INPUT="${{matrix.os}}"
 #           OUTPUT="${INPUT%-*}"
-          
+
 #           echo "::set-output name=convertedString::${OUTPUT}
 
 #       - id: getBuildType
