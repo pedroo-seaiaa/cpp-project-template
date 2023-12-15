@@ -25,26 +25,29 @@ if [[ $IS_SUBMODULE == 1 ]]; then
     PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
 fi
 
+GIT_REMOTE_URL=$(git remote get-url origin)
+REPO_NAME=$(basename $GIT_REMOTE_URL | sed 's/\.git$//')
+
 # ============================================================================
 # Include logger
 # ============================================================================
 
 # import logger
 source ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/logger.sh
-# set_log_level $LOG_LEVEL_TRACE
+set_log_level $LOG_LEVEL_TRACE
 
 # ============================================================================
 # Test Initial Project Setup through Docker
 # ============================================================================
 
+log_info " === Running Initial Project Setup (through Docker) === "
+
 LINUX_DOCKERFILE_PATH=$PROJECT_ROOT_DIR/tests/SetupTests/docker/
 log_debug "LINUX_DOCKERFILE_PATH $LINUX_DOCKERFILE_PATH"
 
 # ----------------------------------------------------------------------------
-# Declarations
+# Detect Docker Installation
 # ----------------------------------------------------------------------------
-
-log_info " === Running Initial Project Setup (through Docker) === "
 
 log_warn "Detecting docker installation ..."
 if command -v docker &>/dev/null; then
@@ -52,29 +55,36 @@ if command -v docker &>/dev/null; then
 else
     log_fatal "Detecting docker installation --- FAILURE"
 fi
+# ----------------------------------------------------------------------------
+# Detect Docker Image
+# ----------------------------------------------------------------------------
 
-log_warn "Detecting docker image tagged with aiaa-linux ..."
-IMAGE_ID=$(docker images -q aiaa-linux)
-if [ "$IMAGE_ID" = "" ]; then
-    log_error "Detecting docker image tagged with aiaa-linux --- FAILURE"
+DOCKER_IMAGE_TAG="docker-image-${REPO_NAME}"
+log_warn "Detecting docker image tagged with ${DOCKER_IMAGE_TAG} ..."
+DOCKER_IMAGE_ID=$(docker images -q ${DOCKER_IMAGE_TAG})
+if [ "$DOCKER_IMAGE_ID" = "" ]; then
+    log_error "Detecting docker image tagged with ${DOCKER_IMAGE_TAG} --- FAILURE"
 
-    log_warn "Building aiaa-linux from Dockerfile ..."
-    docker build -f ${LINUX_DOCKERFILE_PATH}/linux.Dockerfile ${LINUX_DOCKERFILE_PATH} --tag aiaa-linux
-    IMAGE_ID=$(docker images -q aiaa-linux)
-    if [ "$IMAGE_ID" = "" ]; then
-        log_fatal "Building aiaa-linux from Dockerfile --- FAILURE"
+    log_warn "Building ${DOCKER_IMAGE_TAG} from Dockerfile ..."
+    docker build -f ${LINUX_DOCKERFILE_PATH}/linux.Dockerfile ${LINUX_DOCKERFILE_PATH} --tag ${DOCKER_IMAGE_TAG}
+    DOCKER_IMAGE_ID=$(docker images -q ${DOCKER_IMAGE_TAG})
+    if [ "$DOCKER_IMAGE_ID" = "" ]; then
+        log_fatal "Building ${DOCKER_IMAGE_TAG} from Dockerfile --- FAILURE"
     else
-        log_info "Building aiaa-linux from Dockerfile --- SUCCESS"
+        log_info "Building ${DOCKER_IMAGE_TAG} from Dockerfile --- SUCCESS"
     fi
 else
-    log_info "Detecting docker image tagged with aiaa-linux --- SUCCESS"
+    log_info "Detecting docker image tagged with ${DOCKER_IMAGE_TAG} --- SUCCESS"
 fi
 
-VOLUME_NAME="cpp-template-project"
-log_warn "Running project setup through aiaa-linux ..."
+# ----------------------------------------------------------------------------
+# Run Docker Image with this repository as Volume
+# ----------------------------------------------------------------------------
+
+DOCKER_VOLUME_NAME="docker-volume-${REPO_NAME}"
+log_warn "Running project setup through ${DOCKER_IMAGE_TAG} ..."
 cd ${PROJECT_ROOT_DIR}/..
-docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${VOLUME_NAME} aiaa-linux bash
-#docker run --rm aiaa-linux -v ${VOLUME_NAME}:/${VOLUME_NAME}
+docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${DOCKER_VOLUME_NAME} ${DOCKER_IMAGE_TAG} bash
 
 # # debug
 log_debug ""
