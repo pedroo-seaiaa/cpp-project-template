@@ -20,9 +20,14 @@ jobs:
         run: |
           echo "Hello World"
 
-      - uses: actions/checkout@v4
+      - name: Cloning
+        uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Configuring
+        run: |
+          cmake -S . -B build/
 
 # env:
 #   CLANG_TIDY_VERSION: "15.0.2"
