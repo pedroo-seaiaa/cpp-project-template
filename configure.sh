@@ -4,7 +4,7 @@
 # Entrypoint
 # ############################################################################
 
-# Get 
+# Get
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 #
@@ -24,20 +24,48 @@ set_log_level $LOG_LEVEL_TRACE
 
 # Parse command line arguments
 # TODO: add --install-missing or something like that
-VERBOSE=0
-while getopts 'v' flag; do
-    case "${flag}" in
+
+verbose=0 # Default verbosity level
+install_hooks=true
+
+while getopts ":vhn" opt; do
+    case $opt in
     v)
-        VERBOSE=1
-        LOG_VERBOSITY=1
+        ((verbose++))
         set_log_level LOG_LEVEL_TRACE
         ;;
-    ?)
-        echo "script usage: $(basename \$0) [-v]" >&2
+    h)
+        echo "Usage: $0 [-v (verbose)] [-h (help)] [-n (no-install-hooks)]"
+        exit 0
+        ;;
+    n)
+        install_hooks=false
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG"
+        exit 1
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument."
         exit 1
         ;;
     esac
 done
+
+# VERBOSE=0
+# while getopts 'v' flag; do
+#     case "${flag}" in
+#     v)
+#         VERBOSE=1
+#         LOG_VERBOSITY=1
+#         set_log_level LOG_LEVEL_TRACE
+#         ;;
+#     ?)
+#         echo "script usage: $(basename \$0) [-v]" >&2
+#         exit 1
+#         ;;
+#     esac
+# done
 
 # ############################################################################
 # Helper Functions
@@ -48,20 +76,22 @@ done
 function setup_git_hooks() {
     log_trace "setup_git_hooks"
 
-    read -p "Do you want to configure the git hooks? (yes/no): " UserInput
-    if [ "$UserInput" = "yes" ]; then
-        log_warn "Configuring Git Hooks ..."
-        if [ -d "$GIT_HOOKS_PATH" ]; then
-            log_warn "Installing hooks ..."
-            git config core.hooksPath "$GIT_HOOKS_PATH"
-            log_info "Installing hooks --- SUCCESS"
-            log_info "Configuring Git Hooks --- SUCCESS"
+    if [ $install_hooks = true ]; then
+        read -p "Do you want to configure the git hooks? (yes/no): " UserInput
+        if [ "$UserInput" = "yes" ]; then
+            log_warn "Configuring Git Hooks ..."
+            if [ -d "$GIT_HOOKS_PATH" ]; then
+                log_warn "Installing hooks ..."
+                git config core.hooksPath "$GIT_HOOKS_PATH"
+                log_info "Installing hooks --- SUCCESS"
+                log_info "Configuring Git Hooks --- SUCCESS"
+            else
+                log_warn "Installing hooks --- FAILED"
+                log_warn "Configuring Git Hooks --- FAILED"
+            fi
         else
-            log_warn "Installing hooks --- FAILED"
-            log_warn "Configuring Git Hooks --- FAILED"
+            log_info "Skipping git hooks configuration."
         fi
-    else
-        log_info "Skipping git hooks configuration."
     fi
 }
 

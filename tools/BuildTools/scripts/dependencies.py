@@ -52,13 +52,25 @@ def install_cmake():
             subprocess.run(["sudo", "apt-get", "install",
                            "cmake", "-y", "--no-install-recommends"], check=True)
     else:
-        subprocess.run([sys.executable, "-m", "ensurepip",
-                       "--default-pip"], check=True)
+        print("Installing cmake with chocolatey")
     print("pip has been successfully installed.")
 
 
 def install_clang():
     print("Installing clang...")
+    if platform.system().lower() == "linux":
+        # Install pip using apt-get on Ubuntu
+        if is_running_as_sudo():
+            subprocess.run(["apt-get", "update"], check=True)
+            subprocess.run(
+                ["apt-get", "install", "-y", "--no-install-recommends", "clang-15", "clang-tidy-15", "clang-format-15"], check=True)
+        else:
+            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            subprocess.run(["sudo", "apt-get", "install", "-y", "--no-install-recommends",
+                           "clang-15", "clang-tidy-15", "clang-format-15"], check=True)
+    else:
+        print("Installing llvm with chocolatey...")
+    print("pip has been successfully installed.")
 
 
 # ############################################################################
@@ -66,7 +78,7 @@ def install_clang():
 # ############################################################################
 system_requirements = [
     SystemRequirement("cmake", "3.21.0", install_cmake),
-    SystemRequirement("clang", "15.0.0")
+    SystemRequirement("clang", "15.0.0", install_clang),
 ]
 
 
