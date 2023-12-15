@@ -1,9 +1,16 @@
-import platform
-
 from utils import check_software_version
+import sys
+import os
+import platform
+import subprocess
+print("[dependencies.py] traced ")
 
 
 SHOULD_ABORT = False
+
+
+def is_running_as_sudo():
+    return os.geteuid() == 0
 
 
 def defaultOnSuccess(software: str, version: str):
@@ -34,10 +41,36 @@ class SystemRequirement:
 
 def install_cmake():
     print("Installing cmake...")
+    if platform.system().lower() == "linux":
+        # Install pip using apt-get on Ubuntu
+        if is_running_as_sudo():
+            subprocess.run(["apt-get", "update"], check=True)
+            subprocess.run(
+                ["apt-get", "install", "cmake", "-y", "--no-install-recommends"], check=True)
+        else:
+            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            subprocess.run(["sudo", "apt-get", "install",
+                           "cmake", "-y", "--no-install-recommends"], check=True)
+    else:
+        print("Installing cmake with chocolatey")
+    print("pip has been successfully installed.")
 
 
 def install_clang():
     print("Installing clang...")
+    if platform.system().lower() == "linux":
+        # Install pip using apt-get on Ubuntu
+        if is_running_as_sudo():
+            subprocess.run(["apt-get", "update"], check=True)
+            subprocess.run(
+                ["apt-get", "install", "-y", "--no-install-recommends", "clang-15", "clang-tidy-15", "clang-format-15"], check=True)
+        else:
+            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            subprocess.run(["sudo", "apt-get", "install", "-y", "--no-install-recommends",
+                           "clang-15", "clang-tidy-15", "clang-format-15"], check=True)
+    else:
+        print("Installing llvm with chocolatey...")
+    print("pip has been successfully installed.")
 
 
 # ############################################################################
@@ -45,15 +78,18 @@ def install_clang():
 # ############################################################################
 system_requirements = [
     SystemRequirement("cmake", "3.21.0", install_cmake),
-    SystemRequirement("clang", "15.0.0")
+    SystemRequirement("clang", "15.0.0", install_clang),
 ]
 
 
 def check_system_requirements():
+    print("[TRACE] check_system_requirements <<<<<<<<<<<<<<<<<<<<<< ")
     for system_requirement in system_requirements:
         if (check_software_version(system_requirement.software, system_requirement.version)):
+            print(f"{system_requirement.software} found successfully")
             system_requirement.onSuccess()
         else:
+            print(f"{system_requirement.software} missing!")
             system_requirement.onMissing()
 
         if SHOULD_ABORT:

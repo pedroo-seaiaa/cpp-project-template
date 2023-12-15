@@ -52,11 +52,11 @@ On_White='\033[47m'  # White
 # Log Level Definitions
 # =============================================================================
 
-LOG_LEVEL_TRACE=2
-LOG_LEVEL_DEBUG=3
-LOG_LEVEL_INFO=4
-LOG_LEVEL_WARN=5
-LOG_LEVEL_ERROR=6
+export LOG_LEVEL_TRACE=2
+export LOG_LEVEL_DEBUG=3
+export LOG_LEVEL_INFO=4
+export LOG_LEVEL_WARN=5
+export LOG_LEVEL_ERROR=6
 
 export LOG_VERBOSITY=0
 
