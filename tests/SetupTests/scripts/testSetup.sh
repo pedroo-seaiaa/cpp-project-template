@@ -89,8 +89,10 @@ cd ${PROJECT_ROOT_DIR}/..
 
 sleep 1
 
+DOCKER_ENTRYPOINT_CMD="echo '[${DOCKER_IMAGE_TAG}] hello-pedro' && cd ${DOCKER_VOLUME_NAME} && ls && exit 0"
+
 # docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${DOCKER_VOLUME_NAME} ${DOCKER_IMAGE_TAG} bash
-docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${DOCKER_VOLUME_NAME} ${DOCKER_IMAGE_TAG} bash -c "echo 'hello-world' & exit"
+docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${DOCKER_VOLUME_NAME} ${DOCKER_IMAGE_TAG} bash -c "${DOCKER_ENTRYPOINT_CMD}"
 
 sleep 1
 
@@ -122,13 +124,11 @@ docker images
 # #docker ps -aq | xargs docker rm
 
 echo ""
-echo -ne "Clearing screen       "
+echo -ne "Clearing screen in ..."
 sleep 1
 echo -ne "\r"
-echo -ne "\rClearing screen in 3"
+echo -ne "\rClearing screen in 2  "
 sleep 1
-echo -ne "\rClearing screen in 2"
-sleep 1
-echo -ne "\rClearing screen in 1"
+echo -ne "\rClearing screen in 1  "
 sleep 1
 reset
