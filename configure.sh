@@ -1,12 +1,29 @@
 #!/bin/bash
 
+# ############################################################################
+# Entrypoint
+# ############################################################################
+
+# Get 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+#
 LOGGER_PATH=$ROOT_DIR/tools/GitTools/Utils/logger.sh
+
+#
 GIT_HOOKS_PATH=$ROOT_DIR/tools/GitTools/Hooks
+
+#
 PYTHON_SETUP_SCRIPT_PATH=$ROOT_DIR/tools/BuildTools/scripts/setup.py
 
+# Include/Import logger
 source $LOGGER_PATH
 
+# TODO(PO): remove this
+set_log_level $LOG_LEVEL_TRACE
+
+# Parse command line arguments
+# TODO: add --install-missing or something like that
 VERBOSE=0
 while getopts 'v' flag; do
     case "${flag}" in
@@ -23,7 +40,9 @@ while getopts 'v' flag; do
 done
 
 # ############################################################################
-# Functions
+# Helper Functions
+# - setup_git_hooks
+# - run_python_setup
 # ############################################################################
 
 function setup_git_hooks() {
@@ -46,16 +65,17 @@ function setup_git_hooks() {
     fi
 }
 
+DEFAULT_PYTHON_VERSION="3.10.12"
 function run_python_setup() {
     log_warn "Testing if python is installed or in PATH ..."
     if command -v python >/dev/null 2>&1; then
         log_info "Testing if python is installed or in PATH --- SUCCESS"
-        log_warn "Checking python for version 3.12.0 ..."
-        if python --version | grep -q "Python 3.12.0"; then
-            log_info "Checking python for version 3.12.0 --- SUCCESS"
+        log_warn "Checking python for version ${DEFAULT_PYTHON_VERSION} ..."
+        if python --version | grep -q "Python ${DEFAULT_PYTHON_VERSION}"; then
+            log_info "Checking python for version ${DEFAULT_PYTHON_VERSION} --- SUCCESS"
         else
-            log_error "Checking python for version 3.12.0 --- FAILED"
-            log_info "This project was tested with Python 3.12.0. Other versions may not work as expected."
+            log_error "Checking python for version ${DEFAULT_PYTHON_VERSION} --- FAILED"
+            log_warn "This project was tested with Python ${DEFAULT_PYTHON_VERSION}. Other versions may not work as expected."
         fi
 
     else
@@ -66,37 +86,21 @@ function run_python_setup() {
     if [ -e "$PYTHON_SETUP_SCRIPT_PATH" ]; then
         log_warn "Detecting setup.py --- SUCCESS"
         log_warn "Running setup.py"
+        PYTHON_VERSION=$(python --version)
+        log_debug "PYTHON_VERSION: $PYTHON_VERSION"
         python $PYTHON_SETUP_SCRIPT_PATH
     else
         log_fatal "Detecting setup.py --- FAILED"
     fi
 }
 
-function check_linux_system_requirements() {
-    log_warn "Detecting LCOV ..."
-    if command -v lcov &>/dev/null; then
-        log_info "Detecting LCOV --- SUCCESS"
-    else
-        log_error "Detecting LCOV --- FAILURE"
-        read -p "Do you want to install LCOV? (yes/no): " UserInput
-        if [ "$UserInput" = "yes" ]; then
-            log_warn "Installing LCOV ..."
-            sudo apt-get update
-            sudo apt-get install lcov
-        else
-            log_warn "Skipping LCOV installation. Some CMake Targets may not work without it."
-        fi
-    fi
-}
-
 # ############################################################################
-# Main Entry Point
+# Main Function
 # ############################################################################
 
 main() {
     log_message " === Linux Configuration Batch File (version 0.1.0) ==="
     setup_git_hooks
-    check_linux_system_requirements
     run_python_setup
 }
 

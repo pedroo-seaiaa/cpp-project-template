@@ -1,3 +1,5 @@
+print("[setup.py] === Initial Python Setup === ")
+
 from dependencies import check_system_requirements
 
 print("Checking the system requirements ...")

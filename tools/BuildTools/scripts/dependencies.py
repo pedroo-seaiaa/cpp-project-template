@@ -1,9 +1,16 @@
-import platform
-
 from utils import check_software_version
+import sys
+import os
+import platform
+import subprocess
+print("[dependencies.py] traced ")
 
 
 SHOULD_ABORT = False
+
+
+def is_running_as_sudo():
+    return os.geteuid() == 0
 
 
 def defaultOnSuccess(software: str, version: str):
@@ -34,6 +41,20 @@ class SystemRequirement:
 
 def install_cmake():
     print("Installing cmake...")
+    if platform.system().lower() == "linux":
+        # Install pip using apt-get on Ubuntu
+        if is_running_as_sudo():
+            subprocess.run(["apt-get", "update"], check=True)
+            subprocess.run(
+                ["apt-get", "install", "cmake", "-y", "--no-install-recommends"], check=True)
+        else:
+            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            subprocess.run(["sudo", "apt-get", "install",
+                           "cmake", "-y", "--no-install-recommends"], check=True)
+    else:
+        subprocess.run([sys.executable, "-m", "ensurepip",
+                       "--default-pip"], check=True)
+    print("pip has been successfully installed.")
 
 
 def install_clang():
@@ -50,10 +71,13 @@ system_requirements = [
 
 
 def check_system_requirements():
+    print("[TRACE] check_system_requirements <<<<<<<<<<<<<<<<<<<<<< ")
     for system_requirement in system_requirements:
         if (check_software_version(system_requirement.software, system_requirement.version)):
+            print(f"{system_requirement.software} found successfully")
             system_requirement.onSuccess()
         else:
+            print(f"{system_requirement.software} missing!")
             system_requirement.onMissing()
 
         if SHOULD_ABORT:

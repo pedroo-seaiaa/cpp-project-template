@@ -2,9 +2,7 @@
 FROM ubuntu:22.04
 
 # Update the system and install any packages you need
-RUN apt-get update
-
-RUN apt-get install -y git
+RUN apt-get update && apt-get install -y git python-is-python3
 
 # Run your application when the container launches
 CMD ["ls", "/antiphon"]
