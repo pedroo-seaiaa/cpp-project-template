@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ============================================================================
-# Set PROJECT_ROOT_DIR
+# Set PROJECT_ROOT_DIR & REPO_NAME
 # ============================================================================
 
 # navigate to project root directory (this works as long as not in a submodule)
@@ -34,6 +34,7 @@ REPO_NAME=$(basename $GIT_REMOTE_URL | sed 's/\.git$//')
 
 # import logger
 source ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/logger.sh
+# TODO(PO): remove this
 set_log_level $LOG_LEVEL_TRACE
 
 # ============================================================================
@@ -55,6 +56,7 @@ if command -v docker &>/dev/null; then
 else
     log_fatal "Detecting docker installation --- FAILURE"
 fi
+
 # ----------------------------------------------------------------------------
 # Detect Docker Image
 # ----------------------------------------------------------------------------
@@ -84,7 +86,19 @@ fi
 DOCKER_VOLUME_NAME="docker-volume-${REPO_NAME}"
 log_warn "Running project setup through ${DOCKER_IMAGE_TAG} ..."
 cd ${PROJECT_ROOT_DIR}/..
-docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${DOCKER_VOLUME_NAME} ${DOCKER_IMAGE_TAG} bash
+
+sleep 1
+
+# docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${DOCKER_VOLUME_NAME} ${DOCKER_IMAGE_TAG} bash
+docker run --rm -it --mount type=bind,source=${PROJECT_ROOT_DIR},target=/${DOCKER_VOLUME_NAME} ${DOCKER_IMAGE_TAG} bash -c "echo 'hello-world' & exit"
+
+sleep 1
+
+if [ "$?" != 0 ]; then
+    log_error "Running project setup through ${DOCKER_IMAGE_TAG} --- FAILURE"
+else
+    log_info "Running project setup through ${DOCKER_IMAGE_TAG} --- SUCCESS"
+fi
 
 # # debug
 log_debug ""
@@ -106,3 +120,15 @@ docker images
 
 # # TIPS(PO): command to remove all docker containers
 # #docker ps -aq | xargs docker rm
+
+echo ""
+echo -ne "Clearing screen       "
+sleep 1
+echo -ne "\r"
+echo -ne "\rClearing screen in 3"
+sleep 1
+echo -ne "\rClearing screen in 2"
+sleep 1
+echo -ne "\rClearing screen in 1"
+sleep 1
+reset
