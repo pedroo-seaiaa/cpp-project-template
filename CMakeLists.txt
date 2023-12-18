@@ -283,9 +283,9 @@ if(MYPROJECT_BUILD_FUZZ_TESTS)
       PRIVATE myproject_global_settings
               fmt::fmt
               -coverage
-              -fsanitize=fuzzer,undefined,address
+              -fsanitize=fuzzer
     )
-    target_compile_options(myproject_fuzz_tests PRIVATE -fsanitize=fuzzer,undefined,address)
+    target_compile_options(myproject_fuzz_tests PRIVATE -fsanitize=fuzzer)
     target_compile_features(myproject_fuzz_tests PRIVATE cxx_std_20)
 
     set_target_precompiled_headers(myproject_fuzz_tests PRIVATE)
@@ -293,12 +293,14 @@ if(MYPROJECT_BUILD_FUZZ_TESTS)
     # ------------------------------------------------------------------------
     # Utilities
     # ------------------------------------------------------------------------
-    # Allow short runs during automated testing to see if something new breaks
-    # set(FUZZ_RUNTIME 2 CACHE STRING "Number of seconds to run fuzz tests
-    # during ctest run" ) # Default of 2 seconds
 
-    # add_test(NAME fuzz_tester_run COMMAND myproject_fuzz_tests
-    # -max_total_time=${FUZZ_RUNTIME} )
+    # Allow short runs during automated testing to see if something new breaks
+    # set(FUZZ_RUNTIME
+    #     10
+    #     CACHE STRING "Number of seconds to run fuzz tests during ctest run" ) # Default of 10 seconds
+
+    # add_test(NAME fuzz_tester_run COMMAND myproject_fuzz_tests -max_total_time=${FUZZ_RUNTIME})
+
   endif()
 endif()
 
@@ -309,7 +311,7 @@ endif()
 option(MYPROJECT_BUILD_GCOV_TESTS "Build coverage test target" ${PROJECT_IS_TOP_LEVEL} # Problems with LLVM:
        # undefined reference to llvm_* functions
 )
-if(MYPROJECT_BUILD_GCOV_TESTS
+if(MYPROJECT_BUILD_GCOV_TESTS AND CMAKE_BUILD_TYPE STREQUAL "Debug"
    AND NOT MSVC
    AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
 )
@@ -343,9 +345,11 @@ if(MYPROJECT_BUILD_GCOV_TESTS
   # --------------------------------------------------------------------------
   # Utilities from CodeCoverage.cmake (in kksk_cmake_modules)
   # --------------------------------------------------------------------------
+  
   # 1. Append necessary compiler flags for all supported source files
   append_coverage_compiler_flags_to_target(myproject_covr_tests)
-  # 1. create a custom make target which runs your test executable and produces a
+  
+  # 2. create a custom make target which runs your test executable and produces a
   #   code coverage report
   setup_target_for_coverage_lcov(
     NAME
@@ -358,6 +362,7 @@ if(MYPROJECT_BUILD_GCOV_TESTS
     "${ROOT_DIR}/tests/CovrTests"
     NO_DEMANGLE
   )
+
   add_custom_command(
     TARGET myproject_covr_tests_coverage
     POST_BUILD
@@ -371,7 +376,7 @@ endif()
 # Custom Targets
 # ============================================================================
 
-add_custom_target(BUILD_ALL_TESTS EXCLUDE_FROM_ALL)
+add_custom_target(BUILD_ALL_TESTS)
 add_dependencies(BUILD_ALL_TESTS myproject_unit_tests myproject_main_tests)
 
 add_custom_target(

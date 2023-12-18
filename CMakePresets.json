@@ -86,16 +86,12 @@
       "hidden": true,
       "inherits": "conf-windows-common",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++",
-        "MYPROJECT_BUILD_FUZZ_TESTS": "OFF"
+        "CMAKE_CXX_COMPILER": "clang++"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-clang-x64"
-        },
-        "comments": {
-          "_1": "Fuzz Tests fail to link due to mistmatch between RuntimeLibrary with values MT_StaticRelease versus MD_DynamicRelease"
-        }
+        }        
       }
     },
     {
