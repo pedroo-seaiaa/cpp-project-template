@@ -87,7 +87,6 @@
       "inherits": "conf-windows-common",
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_COMPILER": "clang",
         "MYPROJECT_BUILD_FUZZ_TESTS": "OFF"
       },
       "vendor": {
