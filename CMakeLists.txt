@@ -253,14 +253,9 @@ endif()
 
 option(MYPROJECT_BUILD_FUZZ_TESTS "Build fuzz test target" ${PROJECT_IS_TOP_LEVEL})
 if(MYPROJECT_BUILD_FUZZ_TESTS)
-  if(NOT
-     CMAKE_CXX_COMPILER_ID
-     STREQUAL
-     "Clang"
-     OR MSVC
-  )
+  if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR WIN32)
     log_warn("Fuzz tests require Clang")
-    add_custom_target(myproject_fuzz_tests COMMAND echo -e "Fuzz tests require Clang")
+    add_custom_target(myproject_fuzz_tests COMMAND echo -e "[ERROR] Fuzz tests require Clang")
   else()
     # ------------------------------------------------------------------------
     # Dependencies
@@ -311,7 +306,8 @@ endif()
 option(MYPROJECT_BUILD_GCOV_TESTS "Build coverage test target" ${PROJECT_IS_TOP_LEVEL} # Problems with LLVM:
        # undefined reference to llvm_* functions
 )
-if(MYPROJECT_BUILD_GCOV_TESTS AND CMAKE_BUILD_TYPE STREQUAL "Debug"
+if(MYPROJECT_BUILD_GCOV_TESTS
+   AND CMAKE_BUILD_TYPE STREQUAL "Debug"
    AND NOT MSVC
    AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
 )
@@ -345,10 +341,10 @@ if(MYPROJECT_BUILD_GCOV_TESTS AND CMAKE_BUILD_TYPE STREQUAL "Debug"
   # --------------------------------------------------------------------------
   # Utilities from CodeCoverage.cmake (in kksk_cmake_modules)
   # --------------------------------------------------------------------------
-  
+
   # 1. Append necessary compiler flags for all supported source files
   append_coverage_compiler_flags_to_target(myproject_covr_tests)
-  
+
   # 2. create a custom make target which runs your test executable and produces a
   #   code coverage report
   setup_target_for_coverage_lcov(
