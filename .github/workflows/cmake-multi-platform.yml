@@ -34,6 +34,18 @@ jobs:
         run: |
           cmake -S ${{ github.workspace }} --preset windows-clang-release
 
+      - name: Building
+        run: echo "Building"
+
+      - name: Testing
+        run: echo "Testing"
+
+      - name: Installing
+        run: echo "Installing"
+
+      - name: Packaging
+        run: echo "Packaging"
+
 # env:
 #   CLANG_TIDY_VERSION: "15.0.2"
 
