@@ -218,7 +218,7 @@ endif(MYPROJECT_BUILD_UNIT_TESTS)
 # ============================================================================
 
 option(MYPROJECT_BUILD_PERF_TESTS "Build performance test target" ${PROJECT_IS_TOP_LEVEL})
-if(MYPROJECT_BUILD_PERF_TESTS AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
+if(MYPROJECT_BUILD_PERF_TESTS AND CMAKE_BUILD_TYPE STREQUAL "Release")
   # --------------------------------------------------------------------------
   # Dependencies
   # --------------------------------------------------------------------------
