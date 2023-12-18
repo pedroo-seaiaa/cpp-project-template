@@ -132,6 +132,7 @@ jobs:
         include:
           - os: "windows-latest"
             compiler: "msvc"
+            build_type: ${{matrix.build_type}}
     steps:
       - uses: actions/checkout@v4
         with:
