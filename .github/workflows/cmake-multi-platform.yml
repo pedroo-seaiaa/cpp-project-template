@@ -18,8 +18,8 @@ jobs:
     steps:
       - name: Greeting
         run: |
-          echo "Hello World"
-          echo "github.workspace: ${{ github.workspace }}"
+          echo "[cmake-multi-platform][TRACE] Hello World"
+          echo "[cmake-multi-platform][TRACE] github.workspace: ${{ github.workspace }}"
 
       - name: Cloning
         uses: actions/checkout@v4
@@ -32,19 +32,22 @@ jobs:
 
       - name: Configuring
         run: |
+          echo "[cmake-multi-platform][TRACE] Configuring"
           cmake -S ${{ github.workspace }} --preset windows-clang-release
 
       - name: Building
-        run: echo "Building"
+        run: |
+          echo "[cmake-multi-platform][TRACE] Building"
+          cmake -B --preset build-windows-clang-release
 
       - name: Testing
-        run: echo "Testing"
+        run: echo "[cmake-multi-platform][TRACE] Testing"
 
       - name: Installing
-        run: echo "Installing"
+        run: echo "[cmake-multi-platform][TRACE] Installing"
 
       - name: Packaging
-        run: echo "Packaging"
+        run: echo "[cmake-multi-platform][TRACE] Packaging"
 
 # env:
 #   CLANG_TIDY_VERSION: "15.0.2"
