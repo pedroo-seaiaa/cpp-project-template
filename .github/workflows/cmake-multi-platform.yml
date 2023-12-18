@@ -120,12 +120,12 @@ jobs:
       matrix:
         os:
           - windows-latest
-        #   - ubuntu-latest
-        # compiler:
-        #   - llvm-15
-        #   - gcc-11
-        # generator:
-        #   - "Ninja"
+          - ubuntu-latest
+        compiler:
+          - llvm-15
+          - gcc-11
+        generator:
+          - "Ninja"
         build_type:
           - Release
           - Debug
