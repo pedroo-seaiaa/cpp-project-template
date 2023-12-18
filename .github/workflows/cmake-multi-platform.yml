@@ -40,7 +40,6 @@ jobs:
         uses: aminya/setup-cpp@v1
         with:
           vcvarsall: true
-          ccache: true
 
       - name: Configuring
         run: |
