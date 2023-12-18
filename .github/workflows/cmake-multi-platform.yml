@@ -12,6 +12,10 @@ on:
       - main
       - dev
 
+env:
+  CCACHE_PATH: ${{ env.CCACHE_PATH }}
+  PATH: ${{ env.PATH }}
+
 jobs:
   Windows-Job:
     runs-on: [self-hosted, Windows, x64]
