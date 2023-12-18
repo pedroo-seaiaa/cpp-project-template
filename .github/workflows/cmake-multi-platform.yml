@@ -13,6 +13,14 @@ on:
       - dev
 
 jobs:
+  Cloning-Job:
+    runs-on: [self-hosted, x64]
+    steps:
+    - name: Cloning
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+  
   Windows-Job:
     runs-on: [self-hosted, Windows, x64]
     strategy:
@@ -26,10 +34,6 @@ jobs:
           - dev
           - release
     steps:
-      - name: Cloning
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
