@@ -48,6 +48,8 @@ jobs:
           key: windows-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
           restore-keys: |
             windows-${{ matrix.build_type }}-
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
