@@ -182,7 +182,6 @@ jobs:
 
       - name: Build
         run: |
-          echo "[TRACE] build_type: ${{matrix.build_type}}"
           cmake --build ./build --config ${{matrix.build_type}}
 
       - name: Test
