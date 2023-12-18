@@ -126,16 +126,12 @@ jobs:
         #   - gcc-11
         # generator:
         #   - "Ninja"
-        # build_type:
-        #   - Release
-        #   - Debug
+        build_type:
+          - Release
+          - Debug
         include:
           - os: "windows-latest"
             compiler: "msvc"
-            build_type: Debug
-          - os: "windows-latest"
-            compiler: "msvc"
-            build_type: Release
     steps:
       - uses: actions/checkout@v4
         with:
