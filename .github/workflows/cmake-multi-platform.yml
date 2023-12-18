@@ -40,22 +40,11 @@ jobs:
         uses: aminya/setup-cpp@v1
         with:
           vcvarsall: true
-
-      - name: Checking ccache
-        shell: cmd
-        run: |
-          echo "%PATH%"
-          echo "$PATH"
-          echo "$env_PATH
-
-      - name: Bootstrapping vcpkg
-        run: |
-          ${{ github.workspace }}/tools/BuildTools/vcpkg/bootstrap-vcpkg.sh
+          ccache: true
 
       - name: Configuring
         run: |
-          echo "[cmake-multi-platform][TRACE] Configuring"
-          cmd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+          echo "[cmake-multi-platform][TRACE] Configuring"          
           cmake -S ${{ github.workspace }} --preset windows-${{matrix.compiler}}-${{matrix.build_type}}
 
       - name: Building
