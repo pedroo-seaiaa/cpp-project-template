@@ -38,7 +38,10 @@ jobs:
 
       - name: Checking ccache
         shell: cmd
-        run: echo "%PATH%"
+        run: |
+          echo "%PATH%"
+          echo "$PATH"
+          echo "$env_PATH
 
       - name: Bootstrapping vcpkg
         run: |
