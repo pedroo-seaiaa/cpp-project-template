@@ -38,7 +38,7 @@ jobs:
       - name: Building
         run: |
           echo "[cmake-multi-platform][TRACE] Building"
-          cmake -B --preset build-windows-clang-release
+          cmake -B ${{ github.workspace }}/out/build/windows-clang-relaese
 
       - name: Testing
         run: echo "[cmake-multi-platform][TRACE] Testing"
