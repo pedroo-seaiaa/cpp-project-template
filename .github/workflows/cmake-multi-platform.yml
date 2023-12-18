@@ -12,9 +12,6 @@ on:
       - main
       - dev
 
-env:
-  CLANG_TIDY_VERSION: "15" # 15.0.2
-
 jobs:
   Cloning-Job:
     runs-on: [self-hosted, x64]
@@ -125,7 +122,7 @@ jobs:
           - windows-latest
           - ubuntu-latest
         compiler:
-          - llvm-15 # 15.0.2 to match CLANG_TIDY_VERSION ?
+          - llvm-15
           - gcc-11
         generator:
           - "Ninja"
@@ -136,13 +133,6 @@ jobs:
           - os: "windows-latest"
             compiler: "msvc"
     steps:
-      - name: Check for LLVM version mismatches
-        if: ${{ contains(matrix.compiler, 'llvm') && !contains(matrix.compiler, env.CLANG_TIDY_VERSION) }}
-        uses: actions/github-script@v3
-        with:
-          script: |
-            core.setFailed('There is a mismatch between configured llvm compiler and clang-tidy version chosen')
-
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -164,13 +154,24 @@ jobs:
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
+          # compiler and analyzers (llvm, gcc, msvc, vcvarsall, cppcheck, clangtidy, clangformat)
           compiler: ${{ matrix.compiler }}
           vcvarsall: ${{ contains(matrix.os, 'windows') }}
+          cppcheck: true
+          clangtidy: 15
+          clang-format: 15
+          # build system (cmake, ninja, meson, make, task, bazel)
           cmake: true
           ninja: true
+          # package manager (vcpkg, conan, choco, brew, nala)
           vcpkg: true
+          choco: true
+          # cache (ccache, sccache)
+          ccache: true
+          # documentation (doxygen, graphviz)
+          # coverage (gcovr, opencppcoverage, kcov)
           lcov: true
-          clangtidy: ${{ env.CLANG_TIDY_VERSION }}
+          # other (python, powershell, sevenzip)
 
       - name: Configure CMake
         run: |
