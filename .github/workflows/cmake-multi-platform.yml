@@ -36,6 +36,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Checking ccache
+        run: |
+          echo "%PATH%"
+
       - name: Bootstrapping vcpkg
         run: |
           ${{ github.workspace }}/tools/BuildTools/vcpkg/bootstrap-vcpkg.sh
