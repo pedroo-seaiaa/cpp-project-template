@@ -37,8 +37,8 @@ jobs:
           submodules: recursive
 
       - name: Checking ccache
-        run: |
-          echo "%PATH%"
+        shell: cmd
+        run: echo "%PATH%"
 
       - name: Bootstrapping vcpkg
         run: |
