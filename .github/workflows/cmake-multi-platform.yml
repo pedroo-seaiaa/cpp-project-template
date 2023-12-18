@@ -132,6 +132,9 @@ jobs:
         include:
           - os: "windows-latest"
             compiler: "msvc"
+            build_type:
+              - Release
+              - Debug
     steps:
       - uses: actions/checkout@v4
         with:
