@@ -41,7 +41,9 @@ jobs:
           cmake --build ${{ github.workspace }}/out/build/windows-clang-release
 
       - name: Testing
-        run: echo "[cmake-multi-platform][TRACE] Testing"
+        run: |
+          echo "[cmake-multi-platform][TRACE] Testing"
+          ctest --test-dir ${{ github.workspace }}/out/build/windows-clang-release
 
       - name: Installing
         run: echo "[cmake-multi-platform][TRACE] Installing"
