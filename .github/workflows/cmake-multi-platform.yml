@@ -56,6 +56,46 @@ jobs:
 
       - name: Packaging
         run: echo "[cmake-multi-platform][TRACE] Packaging"
+
+  Linux-Job:
+    runs-on: [self-hosted, Linux, x64]
+    strategy:
+      fail-fast: true
+      matrix:
+        compiler:
+          - gcc
+          - clang
+        build_type:
+          - debug
+          - dev
+          - release
+    steps:
+      - name: Cloning
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configuring
+        run: |
+          echo "[cmake-multi-platform][TRACE] Configuring"          
+          cmake -S ${{ github.workspace }} --preset linux-${{matrix.compiler}}-${{matrix.build_type}}
+
+      - name: Building
+        run: |
+          echo "[cmake-multi-platform][TRACE] Building"
+          cmake --build ${{ github.workspace }}/out/build/linux-${{matrix.compiler}}-${{matrix.build_type}}
+
+      - name: Testing
+        run: |
+          echo "[cmake-multi-platform][TRACE] Testing"
+          ctest --test-dir ${{ github.workspace }}/out/build/linux-${{matrix.compiler}}-${{matrix.build_type}}
+
+      - name: Installing
+        run: echo "[cmake-multi-platform][TRACE] Installing"
+
+      - name: Packaging
+        run: echo "[cmake-multi-platform][TRACE] Packaging"
+
 # env:
 #   CLANG_TIDY_VERSION: "15.0.2"
 
