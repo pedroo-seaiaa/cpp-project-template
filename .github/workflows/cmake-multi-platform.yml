@@ -47,7 +47,7 @@ jobs:
       - name: Configuring
         run: |
           echo "[cmake-multi-platform][TRACE] Configuring"
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"
+          cmd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat"
           cmake -S ${{ github.workspace }} --preset windows-${{matrix.compiler}}-${{matrix.build_type}}
 
       - name: Building
