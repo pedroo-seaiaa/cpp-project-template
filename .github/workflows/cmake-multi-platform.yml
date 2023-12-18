@@ -16,7 +16,7 @@ jobs:
   Windows-Job:
     runs-on: [self-hosted, Windows, x64]
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         compiler:
           - msvc
