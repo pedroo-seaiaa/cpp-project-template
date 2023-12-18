@@ -15,6 +15,16 @@ on:
 jobs:
   Windows-Job:
     runs-on: [self-hosted, Windows, x64]
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - msvc
+          - clang
+        build_type:
+          - debug
+          - dev
+          - release
     steps:
       - name: Greeting
         run: |
@@ -33,24 +43,23 @@ jobs:
       - name: Configuring
         run: |
           echo "[cmake-multi-platform][TRACE] Configuring"
-          cmake -S ${{ github.workspace }} --preset windows-clang-release
+          cmake -S ${{ github.workspace }} --preset windows-${{matrix.compiler}}-${{matrix.build_type}}
 
       - name: Building
         run: |
           echo "[cmake-multi-platform][TRACE] Building"
-          cmake --build ${{ github.workspace }}/out/build/windows-clang-release
+          cmake --build ${{ github.workspace }}/out/build/windows-${{matrix.compiler}}-${{matrix.build_type}}
 
       - name: Testing
         run: |
           echo "[cmake-multi-platform][TRACE] Testing"
-          ctest --test-dir ${{ github.workspace }}/out/build/windows-clang-release
+          ctest --test-dir ${{ github.workspace }}/out/build/windows-${{matrix.compiler}}-${{matrix.build_type}}
 
       - name: Installing
         run: echo "[cmake-multi-platform][TRACE] Installing"
 
       - name: Packaging
         run: echo "[cmake-multi-platform][TRACE] Packaging"
-
 # env:
 #   CLANG_TIDY_VERSION: "15.0.2"
 
