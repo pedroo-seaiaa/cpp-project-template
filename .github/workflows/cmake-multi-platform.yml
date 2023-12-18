@@ -169,6 +169,7 @@ jobs:
           cmake: true
           ninja: true
           vcpkg: true
+          lcov: true
           clangtidy: ${{ env.CLANG_TIDY_VERSION }}
 
       - name: Configure CMake
