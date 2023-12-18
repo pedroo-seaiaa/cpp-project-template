@@ -162,13 +162,12 @@ jobs:
           vcvarsall: ${{ contains(matrix.os, 'windows') }}
           cppcheck: true
           clangtidy: 15
-          clang-format: 15
+          clangformat: 15
           # build system (cmake, ninja, meson, make, task, bazel)
           cmake: true
           ninja: true
-          # package manager (vcpkg, conan, choco, brew, nala)
+          # package manager (vcpkg, conan, nala)
           vcpkg: true
-          choco: true
           # cache (ccache, sccache)
           ccache: true
           # documentation (doxygen, graphviz)
@@ -186,4 +185,4 @@ jobs:
 
       - name: Test
         run: |
-          ctest --test-dir ./build
+          ctest --test-dir ./build --config ${{matrix.build_type}}
