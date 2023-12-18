@@ -30,6 +30,7 @@ jobs:
         run: |
           echo "[cmake-multi-platform][TRACE] Hello World"
           echo "[cmake-multi-platform][TRACE] github.workspace: ${{ github.workspace }}"
+          "echo [cmake-multi-platform][TRACE] PATH: $PATH"
           "echo [cmake-multi-platform][TRACE] CCACHE_PATH: $CCACHE_PATH"
 
       - name: Cloning
