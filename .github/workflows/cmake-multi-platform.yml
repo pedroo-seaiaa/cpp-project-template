@@ -172,7 +172,6 @@ jobs:
           ccache: true
           # documentation (doxygen, graphviz)
           # coverage (gcovr, opencppcoverage, kcov)
-          lcov: true
           # other (python, powershell, sevenzip)
 
       - name: Configure CMake
