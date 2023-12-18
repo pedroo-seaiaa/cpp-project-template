@@ -19,15 +19,20 @@ jobs:
       - name: Greeting
         run: |
           echo "Hello World"
+          echo "github.workspace: ${{ github.workspace }}"
 
       - name: Cloning
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Bootstrapping vcpkg
+        run: |
+          ${{ github.workspace }}/tools/BuildTools/vcpkg/bootstrap-vcpkg.sh
+
       - name: Configuring
         run: |
-          cmake -S . -B build/
+          cmake -S ${{ github.workspace }} --preset windows-clang-release
 
 # env:
 #   CLANG_TIDY_VERSION: "15.0.2"
