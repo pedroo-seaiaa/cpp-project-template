@@ -1,6 +1,8 @@
 /// ##########################################################################
 /// @copyright Copyright (c) 2023, AI & ARTS Alchemy. All rights reserved.
 /// ##########################################################################
+#include "StandardLibrary.hpp"
+
 #include "Project/ProjectLib.hpp"
 
 int main(const int argc, char const* const* const argv) {

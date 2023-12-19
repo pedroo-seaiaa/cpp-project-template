@@ -1,6 +1,8 @@
 /// ##########################################################################
 /// @copyright Copyright (c) 2023, Pedro Oliveira. All rights reserved.
 /// ##########################################################################
+#include "StandardLibrary.hpp"
+
 #include "Project/ProjectLib.hpp"
 
 #include <catch2/catch_test_macros.hpp>

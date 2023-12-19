@@ -19,15 +19,15 @@ project(
   LANGUAGES CXX
 )
 
-# ----------------------------------------------------------------------------
+# ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # CMake Include Modules
-# ----------------------------------------------------------------------------
+# ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 include(tools/BuildTools/cmake/Modules/BuildToolsMain.cmake)
 
-# ----------------------------------------------------------------------------
+# ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # CMake Cache Variables & Options
-# ----------------------------------------------------------------------------
+# ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 cmake_host_system_information(RESULT OS_NAME_RESULT QUERY OS_NAME)
 
@@ -92,11 +92,39 @@ if(OS_NAME_RESULT STREQUAL "Windows")
 endif()
 
 # ============================================================================
-# myproject: My Project main library
+# MyProjectPCH: My Project pre-compiled headers
+# NOTE(PO): clang-tidy fails to build cmake precompiled_headers if not CLANG
+#           so we create our own PCH library and link to it
+# ============================================================================
+
+option(USE_STANDARD_LIBRARY_PCH "Use Standard Library Precompile Headers" ON)
+if(USE_STANDARD_LIBRARY_PCH)
+  message("[CORE][INFO] Including StandardLibraryPCH OBJECT library")
+  add_library(StandardLibraryPCH OBJECT)
+  target_sources(StandardLibraryPCH PRIVATE "src/ProjectPCH/StandardLibrary.cpp")
+  target_link_libraries(StandardLibraryPCH PUBLIC myproject_global_settings)
+
+  if(MSVC)
+    target_compile_options(StandardLibraryPCH INTERFACE "/Zc:__cplusplus")
+  else()
+    cmake_host_system_information(RESULT OS_NAME_RESULT QUERY OS_NAME)
+    if(OS_NAME_RESULT STREQUAL "Ubuntu")
+      target_compile_options(StandardLibraryPCH INTERFACE "-fcoroutines")
+    elseif(OS_NAME_RESULT STREQUAL "Darwin")
+      target_compile_options(StandardLibraryPCH INTERFACE "-stdlib=libstdc++")
+    endif()
+  endif()
+else()
+  add_library(StandardLibraryPCH INTERFACE)
+endif()
+add_dependencies(StandardLibraryPCH myproject_global_settings)
+
+# ============================================================================
+# MyProjectLib: My Project main library
 # ============================================================================
 
 add_library(myprojectlib)
-add_dependencies(myprojectlib myproject_global_settings)
+add_dependencies(myprojectlib myproject_global_settings StandardLibraryPCH)
 file(GLOB_RECURSE myprojectlib_SOURCE_FILES "src/ProjectLib/*.cpp")
 file(GLOB_RECURSE myprojectlib_HEADER_FILES "src/ProjectLib/*.hpp")
 file(GLOB_RECURSE myprojectlib_PUBLIC_HEADER_FILES "include/*.hpp")
@@ -105,32 +133,31 @@ target_sources(myprojectlib PRIVATE ${myprojectlib_SOURCE_FILES} ${myprojectlib_
 
 target_include_directories(
   myprojectlib
+  PRIVATE ${ROOT_DIR}/src/ProjectPCH
   PRIVATE ${ROOT_DIR}/src/ProjectLib
   PUBLIC ${ROOT_DIR}/include
 )
 
 find_package(spdlog CONFIG REQUIRED)
-target_link_libraries(myprojectlib PUBLIC myproject_global_settings spdlog::spdlog)
+target_link_libraries(myprojectlib PUBLIC myproject_global_settings StandardLibraryPCH spdlog::spdlog)
 
-set_target_precompiled_headers(myprojectlib PRIVATE)
+# set_target_precompiled_headers(myprojectlib PRIVATE)
 
 # ============================================================================
-# myprojectapp: My Project main application
+# MyProjectApp: My Project main application
 # ============================================================================
 
 add_executable(myprojectapp)
-add_dependencies(myprojectapp myprojectlib)
+add_dependencies(myprojectapp myprojectlib StandardLibraryPCH)
 
 file(GLOB_RECURSE myprojectapp_SOURCE_FILES "src/ProjectApp/*.cpp")
 file(GLOB_RECURSE myprojectapp_HEADER_FILES "src/ProjectApp/*.hpp")
 
 target_sources(myprojectapp PRIVATE ${myprojectapp_SOURCE_FILES} ${myprojectapp_HEADER_FILES})
+target_include_directories(myprojectapp PRIVATE ${ROOT_DIR}/src/ProjectApp ${ROOT_DIR}/src/ProjectPCH)
+target_link_libraries(myprojectapp PRIVATE StandardLibraryPCH myprojectlib)
 
-target_include_directories(myprojectapp PRIVATE ${ROOT_DIR}/src/ProjectApp)
-
-target_link_libraries(myprojectapp PRIVATE myprojectlib)
-
-set_target_precompiled_headers(myprojectapp PRIVATE)
+# set_target_precompiled_headers(myprojectapp PRIVATE)
 
 # ############################################################################
 # Testing
@@ -146,33 +173,31 @@ include(CTest)
 option(MYPROJECT_BUILD_MAIN_TESTS "Build main test targets" ${PROJECT_IS_TOP_LEVEL})
 if(MYPROJECT_BUILD_MAIN_TESTS)
 
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # Dependencies
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   find_package(Catch2 CONFIG REQUIRED)
   include(Catch)
 
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # TARGET: myproject_main_tests
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   add_executable(myproject_main_tests)
-  add_dependencies(myproject_main_tests myprojectlib)
+  add_dependencies(myproject_main_tests StandardLibraryPCH myprojectlib)
 
   file(GLOB_RECURSE myproject_main_tests_SOURCE_FILES "tests/MainTests/*.cpp")
 
   target_sources(myproject_main_tests PRIVATE ${myproject_main_tests_SOURCE_FILES})
+  target_include_directories(myproject_main_tests PRIVATE ${ROOT_DIR}/src/ProjectPCH ${ROOT_DIR}/tests/MainTests)
+  target_link_libraries(myproject_main_tests PRIVATE myprojectlib StandardLibraryPCH Catch2::Catch2WithMain)
 
-  target_include_directories(myproject_main_tests PRIVATE ${ROOT_DIR}/tests/MainTests)
+  # set_target_precompiled_headers(myproject_main_tests PRIVATE)
 
-  target_link_libraries(myproject_main_tests PRIVATE myprojectlib Catch2::Catch2WithMain)
-
-  set_target_precompiled_headers(myproject_main_tests PRIVATE)
-
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # Utilities
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   catch_discover_tests(myproject_main_tests TEST_PREFIX "myproject_main_test_")
 
@@ -184,31 +209,40 @@ endif(MYPROJECT_BUILD_MAIN_TESTS)
 
 option(MYPROJECT_BUILD_UNIT_TESTS "Build unit test targets" ${PROJECT_IS_TOP_LEVEL})
 if(MYPROJECT_BUILD_UNIT_TESTS)
-  # --------------------------------------------------------------------------
+
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # Dependencies
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   set(gtest_EXTERNAL_DIR ${CMAKE_CURRENT_LIST_DIR}/external/googletest)
   find_package(GTest CONFIG REQUIRED)
   include(GoogleTest)
-  # --------------------------------------------------------------------------
+
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # TARGET: myproject_unit_tests
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   add_executable(myproject_unit_tests)
-  add_dependencies(myproject_unit_tests myprojectlib)
+  add_dependencies(myproject_unit_tests StandardLibraryPCH myprojectlib)
 
   file(GLOB_RECURSE myproject_unit_tests_SOURCE_FILES "tests/UnitTests/*.cpp")
 
   target_sources(myproject_unit_tests PRIVATE ${myproject_unit_tests_SOURCE_FILES})
+  target_include_directories(myproject_unit_tests PRIVATE ${ROOT_DIR}/src/ProjectPCH ${ROOT_DIR}/tests/UnitTests)
+  target_link_libraries(
+    myproject_unit_tests
+    PRIVATE myprojectlib
+            StandardLibraryPCH
+            GTest::gtest
+            GTest::gmock
+  )
 
-  target_include_directories(myproject_unit_tests PRIVATE ${ROOT_DIR}/tests/UnitTests)
+  # set_target_precompiled_headers(myproject_unit_tests PRIVATE)
 
-  target_link_libraries(myproject_unit_tests PRIVATE myprojectlib GTest::gtest GTest::gmock)
-
-  set_target_precompiled_headers(myproject_unit_tests PRIVATE)
-
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # Utilities
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   gtest_discover_tests(myproject_unit_tests TEST_PREFIX "myproject_unit_test_")
 
 endif(MYPROJECT_BUILD_UNIT_TESTS)
@@ -219,32 +253,35 @@ endif(MYPROJECT_BUILD_UNIT_TESTS)
 
 option(MYPROJECT_BUILD_PERF_TESTS "Build performance test target" ${PROJECT_IS_TOP_LEVEL})
 if(MYPROJECT_BUILD_PERF_TESTS AND CMAKE_BUILD_TYPE STREQUAL "Release")
-  # --------------------------------------------------------------------------
+
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # Dependencies
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   find_package(benchmark CONFIG REQUIRED)
-  # --------------------------------------------------------------------------
+
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # TARGET: myproject_perf_tests
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   add_executable(myproject_perf_tests)
-  add_dependencies(myproject_perf_tests myprojectlib)
+  add_dependencies(myproject_perf_tests StandardLibraryPCH myprojectlib)
 
   file(GLOB_RECURSE myproject_perf_tests_SOURCE_FILES "tests/PerfTests/*.cpp")
+
   target_sources(myproject_perf_tests PRIVATE ${myproject_perf_tests_SOURCE_FILES})
-
   target_include_directories(myproject_perf_tests PRIVATE ${ROOT_DIR}/tests/PerfTests)
-
   target_link_libraries(myproject_perf_tests PRIVATE myprojectlib benchmark::benchmark)
 
-  set_target_precompiled_headers(myproject_perf_tests PRIVATE)
+  # set_target_precompiled_headers(myproject_perf_tests PRIVATE)
 
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # Utilities
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   # Allow short runs during automated testing to see if something new breaks
-  # set(PERF_RUNTIME 2 CACHE STRING "Number of seconds to run fuzz tests during
-  # ctest run" ) # Default of 2 seconds add_test(NAME perf_tester_run COMMAND
-  # myproject_perf_tests -max_total_time=${PERF_RUNTIME} )
+  # set(PERF_RUNTIME 2 CACHE STRING "Number of seconds to run fuzz tests during ctest run" ) # Default of 2 seconds
+  # add_test(NAME perf_tester_run COMMAND myproject_perf_tests -max_total_time=${PERF_RUNTIME} )
 endif()
 
 # ============================================================================
@@ -257,22 +294,25 @@ if(MYPROJECT_BUILD_FUZZ_TESTS)
     log_warn("Fuzz tests require Clang")
     add_custom_target(myproject_fuzz_tests COMMAND echo -e "[ERROR] Fuzz tests require Clang")
   else()
-    # ------------------------------------------------------------------------
+
+    # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     # Dependencies
-    # ------------------------------------------------------------------------
+    # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
     set(fmt_EXTERNAL_DIR ${CMAKE_CURRENT_LIST_DIR}/external/fmt)
     find_package(fmt CONFIG REQUIRED)
-    # ------------------------------------------------------------------------
+
+    # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     # TARGET: myproject_fuzz_tests
-    # ------------------------------------------------------------------------
+    # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
     add_executable(myproject_fuzz_tests)
-    add_dependencies(myproject_fuzz_tests myprojectlib)
+    add_dependencies(myproject_fuzz_tests StandardLibraryPCH myprojectlib)
 
     file(GLOB_RECURSE myproject_fuzz_tests_SOURCE_FILES "tests/FuzzTests/*.cpp")
+
     target_sources(myproject_fuzz_tests PRIVATE ${myproject_fuzz_tests_SOURCE_FILES})
-
     target_include_directories(myproject_fuzz_tests PRIVATE ${ROOT_DIR}/tests/FuzzTests)
-
     target_link_libraries(
       myproject_fuzz_tests
       PRIVATE myproject_global_settings
@@ -283,11 +323,11 @@ if(MYPROJECT_BUILD_FUZZ_TESTS)
     target_compile_options(myproject_fuzz_tests PRIVATE -fsanitize=fuzzer)
     target_compile_features(myproject_fuzz_tests PRIVATE cxx_std_20)
 
-    set_target_precompiled_headers(myproject_fuzz_tests PRIVATE)
+    # set_target_precompiled_headers(myproject_fuzz_tests PRIVATE)
 
-    # ------------------------------------------------------------------------
+    # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     # Utilities
-    # ------------------------------------------------------------------------
+    # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     # Allow short runs during automated testing to see if something new breaks
     # set(FUZZ_RUNTIME
@@ -311,12 +351,16 @@ if(MYPROJECT_BUILD_GCOV_TESTS
    AND NOT MSVC
    AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
 )
-  # --------------------------------------------------------------------------
+
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # TARGET: myproject_covr_tests
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   add_executable(myproject_covr_tests)
-  add_dependencies(myproject_covr_tests myprojectlib)
+  add_dependencies(myproject_covr_tests StandardLibraryPCH myprojectlib)
+
   file(GLOB_RECURSE myproject_covr_tests_SOURCE_FILES "tests/UnitTests/*.cpp")
+
   target_sources(
     myproject_covr_tests
     PRIVATE ${myproject_SOURCE_FILES}
@@ -324,9 +368,7 @@ if(MYPROJECT_BUILD_GCOV_TESTS
             ${myproject_PUBLIC_HEADER_FILES}
             ${myproject_covr_tests_SOURCE_FILES}
   )
-
   target_include_directories(myproject_covr_tests PRIVATE ${ROOT_DIR}/tests/UnitTests)
-
   target_link_libraries(
     myproject_covr_tests
     PRIVATE myprojectlib
@@ -336,17 +378,16 @@ if(MYPROJECT_BUILD_GCOV_TESTS
   )
   target_include_directories(myproject_covr_tests PRIVATE ${ROOT_DIR}/lib)
 
-  set_target_precompiled_headers(myproject_covr_tests PRIVATE)
+  # set_target_precompiled_headers(myproject_covr_tests PRIVATE)
 
-  # --------------------------------------------------------------------------
-  # Utilities from CodeCoverage.cmake (in kksk_cmake_modules)
-  # --------------------------------------------------------------------------
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  # Utilities from CodeCoverage.cmake
+  # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   # 1. Append necessary compiler flags for all supported source files
   append_coverage_compiler_flags_to_target(myproject_covr_tests)
 
-  # 2. create a custom make target which runs your test executable and produces a
-  #   code coverage report
+  # 2. create a custom make target which runs your test executable and produces a code coverage report
   setup_target_for_coverage_lcov(
     NAME
     myproject_covr_tests_coverage
@@ -373,7 +414,7 @@ endif()
 # ============================================================================
 
 add_custom_target(BUILD_ALL_TESTS)
-add_dependencies(BUILD_ALL_TESTS myproject_unit_tests myproject_main_tests)
+add_dependencies(BUILD_ALL_TESTS StandardLibraryPCH myproject_unit_tests myproject_main_tests)
 
 add_custom_target(
   RUN_ALL_TARGETS
