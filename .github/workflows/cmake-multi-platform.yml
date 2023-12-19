@@ -13,186 +13,173 @@ on:
       - dev
 
 jobs:
-  Windows-Job:
-    runs-on: [self-hosted, Windows, x64]
+  # Cloning-Job:
+  #   runs-on: [self-hosted, x64]
+  #   steps:
+  #   - name: Cloning
+  #     uses: actions/checkout@v4
+  #     with:
+  #       submodules: recursive
+  
+  # Self-Hosted-Windows-Job:
+  #   runs-on: [self-hosted, Windows, x64]
+  #   needs: Cloning-Job
+  #   strategy:
+  #     fail-fast: true
+  #     matrix:
+  #       compiler:
+  #         - msvc
+  #         - clang
+  #       build_type:
+  #         - debug
+  #         - dev
+  #         - release
+  #   steps:
+  #     - name: Cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/vcpkg
+  #           ./build/vcpkg_installed
+  #           ${{ env.HOME }}/.cache/vcpkg/archives
+  #           ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
+  #           ${{ env.LOCALAPPDATA }}\vcpkg\archives
+  #           ${{ env.APPDATA }}\vcpkg\archives
+  #         key: windows-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
+  #         restore-keys: |
+  #           windows-${{ matrix.build_type }}-
+  #     - name: Setup Cpp
+  #       uses: aminya/setup-cpp@v1
+  #       with:
+  #         vcvarsall: true
+  #     - name: Configuring
+  #       run: |
+  #         echo "[cmake-multi-platform][TRACE] Configuring"          
+  #         cmake -S ${{ github.workspace }} --preset windows-${{matrix.compiler}}-${{matrix.build_type}}
+  #     - name: Building
+  #       run: |
+  #         echo "[cmake-multi-platform][TRACE] Building"
+  #         cmake --build ${{ github.workspace }}/out/build/windows-${{matrix.compiler}}-${{matrix.build_type}}
+  #     - name: Testing
+  #       run: |
+  #         echo "[cmake-multi-platform][TRACE] Testing"
+  #         ctest --test-dir ${{ github.workspace }}/out/build/windows-${{matrix.compiler}}-${{matrix.build_type}}
+  #     - name: Installing
+  #       run: echo "[cmake-multi-platform][TRACE] Installing"
+  #     - name: Packaging
+  #       run: echo "[cmake-multi-platform][TRACE] Packaging"
+
+  # Self-Hosted-Linux-Job:
+  #   runs-on: [self-hosted, Linux, x64]
+  #   needs: Cloning-Job
+  #   strategy:
+  #     fail-fast: true
+  #     matrix:
+  #       compiler:
+  #         - gcc
+  #         - clang
+  #       build_type:
+  #         - debug
+  #         - dev
+  #         - release
+  #   steps:
+  #     - name: Cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/vcpkg
+  #           ./build/vcpkg_installed
+  #           ${{ env.HOME }}/.cache/vcpkg/archives
+  #           ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
+  #           ${{ env.LOCALAPPDATA }}\vcpkg\archives
+  #           ${{ env.APPDATA }}\vcpkg\archives
+  #         key: linux-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
+  #         restore-keys: |
+  #           linux-${{ matrix.build_type }}-
+  #     - name: Configuring
+  #       run: |
+  #         echo "[cmake-multi-platform][TRACE] Configuring"          
+  #         cmake -S ${{ github.workspace }} --preset linux-${{matrix.compiler}}-${{matrix.build_type}}
+  #     - name: Building
+  #       run: |
+  #         echo "[cmake-multi-platform][TRACE] Building"
+  #         cmake --build ${{ github.workspace }}/out/build/linux-${{matrix.compiler}}-${{matrix.build_type}}
+  #     - name: Testing
+  #       run: |
+  #         echo "[cmake-multi-platform][TRACE] Testing"
+  #         ctest --test-dir ${{ github.workspace }}/out/build/linux-${{matrix.compiler}}-${{matrix.build_type}}
+  #     - name: Installing
+  #       run: echo "[cmake-multi-platform][TRACE] Installing"
+  #     - name: Packaging
+  #       run: echo "[cmake-multi-platform][TRACE] Packaging"
+
+  GitHub-Hosted-Matrix-Job:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
         compiler:
+          - llvm-15
+          - gcc-11
           - msvc
-          - clang
+        generator:
+          - "Ninja"
         build_type:
-          - debug
-          - dev
-          - release
+          - Release
+          - Debug
+        exclude:
+          - os: ubuntu-latest
+            compiler: msvc
     steps:
-      - name: Cloning
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/vcpkg
+            ./build/vcpkg_installed
+            ${{ env.HOME }}/.cache/vcpkg/archives
+            ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
+            ${{ env.LOCALAPPDATA }}\vcpkg\archives
+            ${{ env.APPDATA }}\vcpkg\archives
+          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.BUILD_TYPE }}-
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          vcvarsall: true
+          # compiler and analyzers (llvm, gcc, msvc, vcvarsall, cppcheck, clangtidy, clangformat)
+          compiler: ${{ matrix.compiler }}
+          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+          cppcheck: true
+          clangtidy: 15
+          clangformat: 15
+          # build system (cmake, ninja, meson, make, task, bazel)
+          cmake: true
+          ninja: true
+          # package manager (vcpkg, conan, nala)
+          vcpkg: true
+          # cache (ccache, sccache)
+          ccache: true
+          # documentation (doxygen, graphviz)
+          # coverage (gcovr, opencppcoverage, kcov)
+          # other (python, powershell, sevenzip)
 
-      - name: Configuring
+      - name: Configure CMake
         run: |
-          echo "[cmake-multi-platform][TRACE] Configuring"          
-          cmake -S ${{ github.workspace }} --preset windows-${{matrix.compiler}}-${{matrix.build_type}}
+          cmake -S . -B ./build -DCMAKE_TOOLCHAIN_FILE:STRING=./tools/BuildTools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-      - name: Building
+      - name: Build
         run: |
-          echo "[cmake-multi-platform][TRACE] Building"
-          cmake --build ${{ github.workspace }}/out/build/windows-${{matrix.compiler}}-${{matrix.build_type}}
+          cmake --build ./build --config ${{matrix.build_type}}
 
-      - name: Testing
+      - name: Test
         run: |
-          echo "[cmake-multi-platform][TRACE] Testing"
-          ctest --test-dir ${{ github.workspace }}/out/build/windows-${{matrix.compiler}}-${{matrix.build_type}}
-
-      - name: Installing
-        run: echo "[cmake-multi-platform][TRACE] Installing"
-
-      - name: Packaging
-        run: echo "[cmake-multi-platform][TRACE] Packaging"
-
-  Linux-Job:
-    runs-on: [self-hosted, Linux, x64]
-    strategy:
-      fail-fast: true
-      matrix:
-        compiler:
-          - gcc
-          - clang
-        build_type:
-          - debug
-          - dev
-          - release
-    steps:
-      - name: Cloning
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Configuring
-        run: |
-          echo "[cmake-multi-platform][TRACE] Configuring"          
-          cmake -S ${{ github.workspace }} --preset linux-${{matrix.compiler}}-${{matrix.build_type}}
-
-      - name: Building
-        run: |
-          echo "[cmake-multi-platform][TRACE] Building"
-          cmake --build ${{ github.workspace }}/out/build/linux-${{matrix.compiler}}-${{matrix.build_type}}
-
-      - name: Testing
-        run: |
-          echo "[cmake-multi-platform][TRACE] Testing"
-          ctest --test-dir ${{ github.workspace }}/out/build/linux-${{matrix.compiler}}-${{matrix.build_type}}
-
-      - name: Installing
-        run: echo "[cmake-multi-platform][TRACE] Installing"
-
-      - name: Packaging
-        run: echo "[cmake-multi-platform][TRACE] Packaging"
-
-# env:
-#   CLANG_TIDY_VERSION: "15.0.2"
-
-# jobs:
-#   Test:
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         os:
-#           - windows-latest
-#           - ubuntu-latest
-#         compiler:
-#           - llvm-15.0.2
-#           - gcc
-#         generator:
-#           - "Ninja Multi-Config"
-#         build_type:
-#           - Release
-#           - Debug
-#         include:
-#           - os: "windows-latest"
-#             compiler: "msvc"
-#     steps:
-#       - name: Check for LLVM version mismatches
-#         if: ${{ contains(matrix.compiler, 'llvm') && !contains(matrix.compiler, env.CLANG_TIDY_VERSION) }}
-#         uses: actions/github-script@v3
-#         with:
-#           script: |
-#             core.setFailed('There is a mismatch between configured llvm compiler and clang-tidy version chosen')
-
-#       - uses: actions/checkout@v4
-#         with:
-#           submodules: recursive
-
-#       - name: Cache
-#         uses: actions/cache@v3
-#         with:
-#           path: |
-#             ~/vcpkg
-#             ./build/vcpkg_installed
-#             ${{ env.HOME }}/.cache/vcpkg/archives
-#             ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
-#             ${{ env.LOCALAPPDATA }}\vcpkg\archives
-#             ${{ env.APPDATA }}\vcpkg\archives
-#           key: ${{ runner.os }}-${{ matrix.compiler }}-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
-#           restore-keys: |
-#             ${{ runner.os }}-${{ env.BUILD_TYPE }}-
-
-#       - name: Setup Cpp
-#         uses: aminya/setup-cpp@v1
-#         with:
-#           compiler: ${{ matrix.compiler }}
-#           vcvarsall: ${{ contains(matrix.os, 'windows') }}
-
-#           cmake: true
-#           ninja: true
-#           vcpkg: true
-#           clangtidy: ${{ env.CLANG_TIDY_VERSION }}
-
-#           cppcheck: true
-
-#       - id: getOS
-#         if: ${{ contains(matrix.os, 'ubuntu') }}
-#         run: |
-#           INPUT="${{matrix.os}}"
-#           OUTPUT="linux"
-#           echo "::set-output name=convertedString::${OUTPUT}
-
-#       - id: getOS
-#         if: ${{ !contains(matrix.os, 'ubuntu') }}
-#         run: |
-#           INPUT="${{matrix.os}}"
-#           OUTPUT="${INPUT%-*}"
-#           echo "::set-output name=convertedString::${OUTPUT}
-
-#       - id: getCompiler
-#         run: |
-#           INPUT="${{matrix.os}}"
-#           OUTPUT="${INPUT%-*}"
-
-#           echo "::set-output name=convertedString::${OUTPUT}
-
-#       - id: getBuildType
-#         run: |
-#           INPUT="{{matrix.build_type}}"
-#           echo "::set-output name=lowerCaseValue::${INPUT,,}"
-
-#       - name: Configure CMake
-#         run: |
-#           cmake -S . --preset ${{matrix.os}}-${{matrix.compiler}}-${{matrix.build_type}}
-
-#       - name: Build
-#         run: |
-#           cmake --build ${{matrix.os}}-${{matrix.compiler}}-${{matrix.build_type}}
-
-#       - name: Test
-#         working-directory: ./out/build/${{matrix.os}}-${{matrix.compiler}}-${{matrix.build_type}}
-#         run: |
-#           ctest
+          ctest --test-dir ./build --config ${{matrix.build_type}}
