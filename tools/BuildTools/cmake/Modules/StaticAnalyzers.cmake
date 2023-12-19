@@ -52,10 +52,11 @@ if(ENABLE_CPPCHECK)
 endif()
 
 # =============================================================================
-option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
 if(ENABLE_CLANG_TIDY)
   find_program(CLANGTIDY clang-tidy)
   if(CLANGTIDY)
+    log_info("clang-tidy found and enabled")
     set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY}
                              -extra-arg=-Wno-unknown-warning-option)
   else()

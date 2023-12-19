@@ -34,7 +34,9 @@ readability-*,\
 -bugprone-assignment-in-if-condition,\
 -cppcoreguidelines-avoid-do-while,\
 -cppcoreguidelines-avoid-const-or-ref-data-members,\
--misc-use-anonymous-namespace
+-misc-use-anonymous-namespace,
+-misc-include-cleaner
+-google-readability-avoid-underscore-in-googletest-name
 "
 
 #Notes:
@@ -46,6 +48,8 @@ readability-*,\
 # modernize-return-braced-init-list: better readability without enforcing this
 # bugprone-easily-swappable-parameters: cannot trivially be fixed, too sensitive
 # readability-identifier-length: one-character parameters are ok imo.
+
+# misc-include-cleaner: TODO: review
 
 WarningsAsErrors: '*,-bugprone-exception-escape'
 HeaderFilterRegex: '^.*([^b]uild|[^u]ild|[^i]ld|[^l]d|[^d])(/|\\)antiphon(/|\\)(Audio|Base|Blackboard|Config|ConfigProvider|Core|Datagraph|DucklingWrapper|EmotionSim|Entities|Environment|Experiments|Expressions|FileTransfer|Intents|Lmqs|OnnxWrapper|Proto|Remote|Samples|SpeechText|Strings|Tokenization|Tools|VectorDatabase|WordNet)(/|\\)([^.]|\.[^.])*([^b]|[^p]b|[^.]pb)\.(h(pp)?|inl)$'

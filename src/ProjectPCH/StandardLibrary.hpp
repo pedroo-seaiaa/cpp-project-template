@@ -33,7 +33,7 @@
 /// @subsubsection Error handling
 /// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-#include <cassert> // Conditionally compiled macro that compares its argument to zero
+#include <cassert>   // Conditionally compiled macro that compares its argument to zero
 #include <cerrno>    // Macro containing the last error number
 #include <exception> // Exception handling utilities
 #include <stdexcept> // Standard exception objects
@@ -93,7 +93,7 @@
 #include <fstream>  // std::basic_fstream, et. al class templates and typedefs
 #include <iomanip>  // Helper functions to contro the format of input and output
 #include <iostream> // Several standard stream objects (i.e. <ios> <istream> ...)
-#include <sstream> // std::basic_stringstream, et. al class templates and typedefs
+#include <sstream>  // std::basic_stringstream, et. al class templates and typedefs
 
 /// ###########################################################################
 /// @section C++ 11
