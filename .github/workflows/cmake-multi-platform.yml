@@ -144,12 +144,6 @@ jobs:
             ~/vcpkg
             ./build/vcpkg_installed
             ${{ env.HOME }}/.cache/vcpkg/archives
-            ${{ env.HOME }}/runner/cmake
-            ${{ env.HOME }}/runner/ninja
-            ${{ env.HOME }}/runner/vcpkg
-            ${{ env.HOME }}/runneradmin/cmake
-            ${{ env.HOME }}/runneradmin/ninja
-            ${{ env.HOME }}/runneradmin/vcpkg
             ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
             ${{ env.LOCALAPPDATA }}\vcpkg\archives
             ${{ env.APPDATA }}\vcpkg\archives
@@ -180,7 +174,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_TOOLCHAIN_FILE:STRING=./tools/BuildTools/vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake -S . -B ./build -DCMAKE_TOOLCHAIN_FILE:STRING=./tools/BuildTools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
       - name: Build
         run: |
