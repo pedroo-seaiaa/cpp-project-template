@@ -124,15 +124,15 @@ jobs:
         compiler:
           - llvm-15
           - gcc-11
+          - msvc
         generator:
           - "Ninja"
         build_type:
           - Release
           - Debug
-        include:
-          - os: "windows-latest"
-            compiler: "msvc"
-            build_type: ${{matrix.build_type}}
+        exclude:
+          - os: ubuntu-latest
+            compiler: msvc
     steps:
       - uses: actions/checkout@v4
         with:
