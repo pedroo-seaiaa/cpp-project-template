@@ -1,5 +1,5 @@
 /// ##########################################################################
-/// @copyright Copyright (c) 2023, Pedro Oliveira. All rights reserved.
+/// @copyright Copyright (c) 2023, AI & ARTS Alchemy. All rights reserved.
 /// ##########################################################################
 #include "StandardLibrary.hpp"
 

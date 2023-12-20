@@ -24,6 +24,7 @@ void BM_loop_int(benchmark::State& state) {
   s[2 * N - 1] = 0;
   const char *s1 = s.get(), *s2 = s1 + N;
   for (auto _ : state) {
+    (void)_;
     benchmark::DoNotOptimize(compare_int(s1, s2));
   }
   state.SetItemsProcessed(N * state.iterations());

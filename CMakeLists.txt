@@ -418,7 +418,7 @@ add_dependencies(
 )
 
 add_custom_target(
-  RUN_ALL_TARGETS
+  RUN_ALL_TESTS
   COMMAND myprojectapp
   COMMAND ${CMAKE_COMMAND} -E echo "Running Unit Tests"
   COMMAND ${CMAKE_COMMAND} -E echo ""
@@ -431,6 +431,8 @@ add_custom_target(
   COMMAND ${CMAKE_COMMAND} -E echo "Running Perf Tests"
   COMMAND ${CMAKE_COMMAND} -E echo ""
   COMMAND $<$<CONFIG:Release>:myproject_perf_tests>
+  COMMAND ${CMAKE_COMMAND} -E echo $<$<CONFIG:Debug>:"nothing to do">
+  COMMAND ${CMAKE_COMMAND} -E echo $<$<CONFIG:RelWithDebInfo>:"  nothing to do">
   COMMAND ${CMAKE_COMMAND} -E echo ""
   COMMAND ${CMAKE_COMMAND} -E echo "Finished executing RUN_ALL_TARGETS"
 )
