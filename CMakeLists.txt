@@ -389,14 +389,10 @@ if(MYPROJECT_BUILD_GCOV_TESTS
 
   # 2. create a custom make target which runs your test executable and produces a code coverage report
   setup_target_for_coverage_lcov(
-    NAME
-    myproject_covr_tests_coverage
-    EXECUTABLE
-    myproject_covr_tests
-    DEPENDENCIES
-    myproject_covr_tests
-    BASE_DIRECTORY
-    "${ROOT_DIR}/tests/CovrTests"
+    NAME myproject_covr_tests_coverage
+    EXECUTABLE myproject_covr_tests
+    DEPENDENCIES myproject_covr_tests
+    BASE_DIRECTORY "${ROOT_DIR}/tests/CovrTests"
     NO_DEMANGLE
   )
 
@@ -414,7 +410,12 @@ endif()
 # ============================================================================
 
 add_custom_target(BUILD_ALL_TESTS)
-add_dependencies(BUILD_ALL_TESTS StandardLibraryPCH myproject_unit_tests myproject_main_tests)
+add_dependencies(
+  BUILD_ALL_TESTS
+  StandardLibraryPCH
+  myproject_unit_tests
+  myproject_main_tests
+)
 
 add_custom_target(
   RUN_ALL_TARGETS
