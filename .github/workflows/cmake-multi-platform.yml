@@ -174,7 +174,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B ./build -DCMAKE_TOOLCHAIN_FILE:STRING=./tools/BuildTools/vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake -S . -B ./build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_TOOLCHAIN_FILE:STRING=./tools/BuildTools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
       - name: Build
         run: |
