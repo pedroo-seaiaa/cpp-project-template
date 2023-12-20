@@ -378,6 +378,11 @@ if(MYPROJECT_BUILD_GCOV_TESTS
   )
   target_include_directories(myproject_covr_tests PRIVATE ${ROOT_DIR}/lib)
 
+  # NOTE(PO): we need to remove clang-tidy on GNU gcc Debug,
+  # because, if we don't, we get the following error:
+  # error: unknown argument: '-fprofile-abs-path' [clang-diagnostic-error]
+  set_target_properties(myproject_covr_tests PROPERTIES CXX_CLANG_TIDY "")
+
   # set_target_precompiled_headers(myproject_covr_tests PRIVATE)
 
   # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -427,12 +432,10 @@ add_custom_target(
   COMMAND ${CMAKE_COMMAND} -E echo "Running Main Tests"
   COMMAND ${CMAKE_COMMAND} -E echo ""
   COMMAND myproject_main_tests
-  COMMAND ${CMAKE_COMMAND} -E echo ""
-  COMMAND ${CMAKE_COMMAND} -E echo "Running Perf Tests"
-  COMMAND ${CMAKE_COMMAND} -E echo ""
+  COMMAND ${CMAKE_COMMAND} -E echo $<$<CONFIG:Release>:"">
+  COMMAND ${CMAKE_COMMAND} -E echo $<$<CONFIG:Release>:"Running Perf Tests">
+  COMMAND ${CMAKE_COMMAND} -E echo $<$<CONFIG:Release>:"">
   COMMAND $<$<CONFIG:Release>:myproject_perf_tests>
-  COMMAND ${CMAKE_COMMAND} -E echo $<$<CONFIG:Debug>:"nothing to do">
-  COMMAND ${CMAKE_COMMAND} -E echo $<$<CONFIG:RelWithDebInfo>:"  nothing to do">
   COMMAND ${CMAKE_COMMAND} -E echo ""
   COMMAND ${CMAKE_COMMAND} -E echo "Finished executing RUN_ALL_TARGETS"
 )

@@ -1,17 +1,20 @@
 ---
+# Version: 15.y.z
 Checks:          'clang-diagnostic-*,clang-analyzer-*'
 WarningsAsErrors: ''
-HeaderFileExtensions:
-  - ''
-  - h
-  - hh
-  - hpp
-  - hxx
-ImplementationFileExtensions:
-  - c
-  - cc
-  - cpp
-  - cxx
+# NOTE(PO): Available on Version 17.y.z
+# HeaderFileExtensions:
+#   - ''
+#   - h
+#   - hh
+#   - hpp
+#   - hxx
+# NOTE(PO): Available on Version 17.y.z
+# ImplementationFileExtensions:
+#   - c
+#   - cc
+#   - cpp
+#   - cxx
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
@@ -29,6 +32,7 @@ CheckOptions:
   llvm-qualified-auto.AddConstToQualified: 'false'
   llvm-else-after-return.WarnOnConditionVariables: 'false'
   cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField: 'false'
-SystemHeaders:   false
+# NOTE(PO): Available on Version 17.y.z
+# SystemHeaders:   false
 ...
 
