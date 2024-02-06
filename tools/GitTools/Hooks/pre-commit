@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# =============================================================================
+# Fun Fact: we can use the following shebang line for cross-compiling:
+# /* #!/bin/bash; C:/Program\ Files/path/to/Git/usr/bin/sh.exe */
+# according to https://www.youtube.com/watch?v=fMYv6-SZsSo
+# =============================================================================
+
+# ============================================================================
+# Script setup
+# ============================================================================
+
+# get the directory where the script is located
+THIS_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+# import git utilities
+GIT_UTILITIES_SCRIPT_PATH=$THIS_SCRIPT_DIR/../Utils/utilities.sh
+test -f $GIT_UTILITIES_SCRIPT_PATH || (echo "File not found: $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
+source $GIT_UTILITIES_SCRIPT_PATH || (echo "Failed to source $GIT_UTILITIES_SCRIPT_PATH" && exit 1)
+
+# detect if this tools folder is a submodule or not
+IS_SUBMODULE=$(
+    git_is_submodule
+    echo $?
+)
+
+# getting the root level directory of the project
+PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
+if [[ $IS_SUBMODULE == 1 ]]; then
+    cd "${PROJECT_ROOT_DIR}/.."
+    PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
+fi
+
+# import logger
+source ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/logger.sh
+
+CMAKE_CURRENT_LOG_LEVEL=$CMAKE_LOG_LEVEL_TRACE
+
+log_info "=== Running pre-commit git-hooks ==="
+
+# # An example hook script to verify what is about to be committed.
+# # Called by "git commit" with no arguments.  The hook should
+# # exit with non-zero status after issuing an appropriate message if
+# # it wants to stop the commit.
+# #
+# # To enable this hook, rename this file to "pre-commit".
+
+log_warn "TODO(PO): Validate email address"
+log_warn "TODO(PO): Get a list of all changed files."
+log_warn "TODO(PO): Format all Added or Modified files (c++, cmake)"
+log_warn "TODO(PO): Set REQUIRES_CLEAN_BUILD if Added or Deleted files"
+
+# =============================================================================
+# Run All Tests
+# =============================================================================
+
+if [[ $CLEAN_BUILD != 0 ]]; then
+    ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/runTests.sh -f
+else
+    ${PROJECT_ROOT_DIR}/tools/GitTools/Utils/runTests.sh
+fi
+
+if [[ "$?" != 0 ]]; then
+    log_error "pre-commit tests - FAILED"
+    exit 1
+else
+    log_info "pre-commit tests - DONE"
+fi
